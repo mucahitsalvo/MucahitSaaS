@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MücahitSaaS</title>
+    <meta name="theme-color" content="#6366f1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+
+    <!-- AUTH SCREEN -->
+    <div class="auth-screen" id="authScreen">
+        <div class="auth-box glass-panel" id="loginBox">
+            <div class="logo-large">
+                <i class='bx bx-cube-alt'></i>
+                <span>Mücahit<span class="pro">SaaS</span></span>
+            </div>
+            <h2>Sisteme Giriş Yapın</h2>
+            <p class="auth-subtitle">Sadece 'Giriş' butonuna basarak demoyu inceleyebilirsiniz.</p>
+            <!-- LOGIN FORM -->
+            <form id="loginForm">
+                <div class="input-group">
+                    <i class='bx bx-envelope'></i>
+                    <input type="email" id="loginEmail" placeholder="E-posta" required>
+                </div>
+                <div class="input-group">
+                    <i class='bx bx-lock-alt'></i>
+                    <input type="password" id="loginPassword" placeholder="Şifre" required>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; color:var(--text-secondary); font-size:13px; padding:0 5px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="rememberMe" style="accent-color:var(--primary); width:16px; height:16px; cursor:pointer;">
+                        <label for="rememberMe" style="cursor:pointer;">Beni Hatırla</label>
+                    </div>
+                    <a href="#" onclick="openForgotPassword(event)" style="color:var(--primary); text-decoration:none; font-weight:500;" onmouseover="this.style.color='var(--secondary)'" onmouseout="this.style.color='var(--primary)'">Şifremi Unuttum</a>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Giriş Yap <i class='bx bx-right-arrow-alt'></i></button>
+                <div style="text-align:center; margin-top:15px; font-size:13px;">
+                    <a href="#" style="color:var(--primary); text-decoration:none;" onclick="toggleAuth('register')">Hesabın yok mu? Kayıt Ol</a>
+                </div>
+            </form>
+
+            <!-- FORGOT PASSWORD FORM -->
+            <form id="forgotForm" style="display:none;" onsubmit="handleForgotSubmit(event)">
+                <div id="forgotStep1">
+                    <p style="color:var(--text-secondary); font-size:13px; text-align:center; margin-bottom:20px; line-height:1.5;">Şifrenizi sıfırlamak için e-posta adresinizi girin. Size 6 haneli bir doğrulama kodu göndereceğiz.</p>
+                    <div class="input-group">
+                        <i class='bx bx-envelope'></i>
+                        <input type="email" id="forgotEmail" placeholder="E-posta Adresiniz" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" style="margin-top:10px;">Doğrulama Kodu Gönder <i class='bx bx-paper-plane'></i></button>
+                </div>
+                
+                <div id="forgotStep2" style="display:none;">
+                    <p style="color:var(--text-secondary); font-size:13px; text-align:center; margin-bottom:20px; line-height:1.5;" id="forgotStep2Title">Doğrulama kodu e-postanıza gönderildi. Lütfen kodu girin.</p>
+                    <div class="input-group">
+                        <i class='bx bx-key'></i>
+                        <input type="text" id="forgotCode" placeholder="6 Haneli Kod" maxlength="6">
+                    </div>
+                    <div class="input-group">
+                        <i class='bx bx-lock-open-alt'></i>
+                        <input type="password" id="forgotNewPassword" placeholder="Yeni Şifreniz">
+                    </div>
+                    <button type="button" onclick="verifyAndResetPassword()" class="btn btn-primary w-100" style="margin-top:10px;">Şifreyi Güncelle <i class='bx bx-check-double'></i></button>
+                </div>
+
+                <div style="text-align:center; margin-top:20px; font-size:13px;">
+                    <a href="#" style="color:var(--primary); text-decoration:none;" onclick="toggleAuth('login')">Giriş Ekranına Dön</a>
+                </div>
+            </form>
+
+            <!-- REGISTER FORM -->
+            <form id="registerForm" style="display:none;">
+                <div class="input-group">
+                    <i class='bx bx-envelope'></i>
+                    <input type="email" id="regEmail" placeholder="Gerçek E-posta Adresi" required>
+                </div>
+                <div class="input-group">
+                    <i class='bx bx-lock-alt'></i>
+                    <input type="password" id="regPassword" placeholder="Şifre Belirle" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Kayıt Ol <i class='bx bx-user-plus'></i></button>
+                <div style="text-align:center; margin-top:15px; font-size:13px;">
+                    <a href="#" style="color:var(--primary); text-decoration:none;" onclick="toggleAuth('login')">Zaten hesabın var mı? Giriş Yap</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div class="app-container" id="appContainer" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel-dark">
+            <div class="logo">
+                <i class='bx bx-cube-alt'></i><span>Mücahit<span class="pro">SaaS</span></span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class='bx bx-grid-alt'></i> <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="cariler">
+                    <i class='bx bx-group'></i> <span>Cari Hesaplar</span>
+                </a>
+                <a href="#" class="nav-item" data-page="urunler">
+                    <i class='bx bx-box'></i> <span>Ürünler / Stok</span>
+                </a>
+                <a href="#" class="nav-item" data-page="faturalar">
+                    <i class='bx bx-receipt'></i> <span>Faturalar</span>
+                </a>
+                <a href="#" class="nav-item" data-page="takvim">
+                    <i class='bx bx-calendar'></i> <span>Takvim / Notlar</span>
+                </a>
+                <a href="#" class="nav-item" data-page="tickets">
+                    <i class='bx bx-support'></i> <span>Destek (Ticket)</span>
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <div class="user-info">
+                    <img src="https://ui-avatars.com/api/?name=Kullanici&background=6366f1&color=fff" alt="User">
+                    <div>
+                        <h4 id="sidebarUserEmail">Kullanıcı</h4>
+                        <p>Yetkili</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()"><i class='bx bx-log-out'></i></button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar glass-panel-dark">
+                <div class="search-bar">
+                    <i class='bx bx-search'></i>
+                    <input type="text" placeholder="Uygulama içinde arayın...">
+                </div>
+                <div class="topbar-actions" style="display: flex; align-items: center; gap: 15px; position: relative;">
+                    <div style="position: relative;">
+                        <button class="icon-btn" id="notificationBtn" onclick="toggleNotifications(event)">
+                            <i class='bx bx-bell'></i>
+                            <span class="badge" id="notificationBadge" style="display: none;">0</span>
+                        </button>
+                        
+                        <!-- Sleek Glassmorphic Notification Dropdown -->
+                        <div class="glass-panel" id="notificationDropdown" style="display:none; position:absolute; top:50px; right:0; width:320px; z-index:100; padding:18px; border-radius:16px; border:1px solid var(--border-light); box-shadow: 0 15px 35px rgba(0,0,0,0.6); text-align: left; animation: fadeIn 0.3s ease;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-light); padding-bottom:10px;">
+                                <h4 style="font-size:15px; font-weight:600; color:#fff;">Bildirimler</h4>
+                                <a href="#" onclick="clearNotifications(event)" style="font-size:12px; color:var(--primary); text-decoration:none; font-weight:500; transition:0.2s;" onmouseover="this.style.color='var(--secondary)'" onmouseout="this.style.color='var(--primary)'">Tümünü Temizle</a>
+                            </div>
+                            <div id="notificationList" style="display:flex; flex-direction:column; gap:10px; max-height:250px; overflow-y:auto; padding-right:5px;">
+                                <!-- Dynamically loaded notifications -->
+                            </div>
+                        </div>
+                    </div>
+                    <button class="icon-btn" onclick="loadPage('ayarlar')"><i class='bx bx-cog'></i></button>
+                    <button class="btn btn-primary btn-sm" onclick="openModal('fatura')"><i class='bx bx-plus'></i> Hızlı Ekle</button>
+                </div>
+            </header>
+            
+            <div class="content-wrapper" id="contentArea">
+                <!-- Content gets injected here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL (For Adding Data) -->
+    <div class="auth-screen" id="appModal" style="display:none; background: rgba(0,0,0,0.8);">
+        <div class="auth-box glass-panel" style="max-width: 500px; padding: 30px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <h3 id="modalTitle">Yeni Ekle</h3>
+                <i class='bx bx-x' style="font-size:24px; cursor:pointer;" onclick="closeModal()"></i>
+            </div>
+            <form id="genericForm">
+                <div id="modalBody" style="text-align:left;"></div>
+                <button type="submit" class="btn btn-primary w-100" style="margin-top:20px;">Kaydet</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    <script src="assets/js/app.js?v=8"></script>
+</body>
+</html>
