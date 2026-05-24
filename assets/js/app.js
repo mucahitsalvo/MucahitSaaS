@@ -230,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let FINANCE_CHART = null;
+let PIE_CHART = null;
 
 function processAuth(formElement) {
     const btn = formElement.querySelector('button');
@@ -315,12 +316,19 @@ function renderDashboard(container) {
             </div>
         </div>
 
-        <div class="dashboard-grid fade-in" style="animation-delay: 0.2s">
+        <div class="dashboard-grid fade-in" style="animation-delay: 0.2s; grid-template-columns: 1fr 1fr;">
             <div class="glass-panel chart-container">
                 <div class="table-header"><h3>Nakit Akışı (Gelir vs Gider)</h3></div>
                 <canvas id="financeChart"></canvas>
             </div>
             
+            <div class="glass-panel chart-container">
+                <div class="table-header"><h3>Kasa & Banka Dağılımı</h3></div>
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid fade-in" style="animation-delay: 0.3s; grid-template-columns: 1fr; margin-top: 24px;">
             <div class="glass-panel table-container">
                 <div class="table-header"><h3>Son İşlemler</h3></div>
                 <table>
@@ -347,39 +355,31 @@ function renderDashboard(container) {
             const monthlyData = getMonthlyFinanceData();
             
             const gradientGelir = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
-            gradientGelir.addColorStop(0, 'rgba(99, 102, 241, 0.5)');
-            gradientGelir.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+            gradientGelir.addColorStop(0, 'rgba(99, 102, 241, 0.8)');
+            gradientGelir.addColorStop(1, 'rgba(99, 102, 241, 0.2)');
 
             const gradientGider = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
-            gradientGider.addColorStop(0, 'rgba(236, 72, 153, 0.5)');
-            gradientGider.addColorStop(1, 'rgba(236, 72, 153, 0.0)');
+            gradientGider.addColorStop(0, 'rgba(236, 72, 153, 0.8)');
+            gradientGider.addColorStop(1, 'rgba(236, 72, 153, 0.2)');
 
             FINANCE_CHART = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz'],
                     datasets: [
                         {
                             label: 'Gelirler',
                             data: monthlyData.monthlyGelir,
-                            borderColor: '#6366f1',
                             backgroundColor: gradientGelir,
-                            borderWidth: 3,
-                            pointBackgroundColor: '#fff',
-                            pointBorderColor: '#6366f1',
-                            fill: true,
-                            tension: 0.4
+                            borderRadius: 6,
+                            barPercentage: 0.6
                         },
                         {
                             label: 'Giderler',
                             data: monthlyData.monthlyGider,
-                            borderColor: '#ec4899',
                             backgroundColor: gradientGider,
-                            borderWidth: 3,
-                            pointBackgroundColor: '#fff',
-                            pointBorderColor: '#ec4899',
-                            fill: true,
-                            tension: 0.4
+                            borderRadius: 6,
+                            barPercentage: 0.6
                         }
                     ]
                 },
@@ -390,6 +390,36 @@ function renderDashboard(container) {
                     scales: {
                         x: { grid: { display: false }, ticks: { color: 'var(--text-secondary)' } },
                         y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'var(--text-secondary)' } }
+                    }
+                }
+            });
+        }
+
+        const pieCtx = document.getElementById('pieChart');
+        if (pieCtx) {
+            if (PIE_CHART) PIE_CHART.destroy();
+            
+            const labels = mockData.kasaBanka.map(k => k.ad);
+            const data = mockData.kasaBanka.map(k => k.bakiye);
+            const bgColors = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
+
+            PIE_CHART = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.length > 0 ? labels : ['Henüz Veri Yok'],
+                    datasets: [{
+                        data: data.length > 0 ? data : [1],
+                        backgroundColor: data.length > 0 ? bgColors.slice(0, data.length) : ['#333'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { 
+                        legend: { position: 'right', labels: { color: 'var(--text-secondary)' } } 
                     }
                 }
             });
