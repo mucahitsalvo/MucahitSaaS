@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MücahitSaaS - Modern CSS Grid Demo</title>
+    <!-- Google Fonts & Boxicons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    
+    <style>
+        /* --- GLOBAL RESETS & STYLING --- */
+        :root {
+            --bg-color: #0b0f19;
+            --text-color: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.3);
+            --gradient-1: linear-gradient(135deg, #6366f1, #a855f7);
+            --gradient-2: linear-gradient(135deg, #3b82f6, #06b6d4);
+            --gradient-3: linear-gradient(135deg, #f59e0b, #ef4444);
+            --gradient-4: linear-gradient(135deg, #10b981, #3b82f6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            max-width: 700px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* --- MOBILE-FIRST CSS GRID SYSTEM --- */
+        /* Mobil Öncelikli Yapı: Varsayılan olarak (sıfırdan 767px'e kadar) 1 Sütun */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            width: 100%;
+            max-width: 1600px;
+            padding: 0 10px;
+        }
+
+        /* Tablet Kırılma Noktası (Breakpoints): 768px ve üzeri için 2 Sütun */
+        @media (min-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Dizüstü/Masaüstü Kırılma Noktası: 1024px ve üzeri için 3 Sütun */
+        @media (min-width: 1024px) {
+            .grid-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Geniş Ekran Kırılma Noktası: 1440px ve üzeri için 4 Sütun */
+        @media (min-width: 1440px) {
+            .grid-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* --- GLASSMORPHIC CARD COMPONENT --- */
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 280px;
+        }
+
+        /* Kart Parlama Efektleri (Hover) */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 30px var(--primary-glow);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        /* Kart İkon Tasarımı */
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 24px;
+        }
+
+        /* Renk Alternatifleri */
+        .card.color-1 .card-icon { background: var(--gradient-1); }
+        .card.color-2 .card-icon { background: var(--gradient-2); }
+        .card.color-3 .card-icon { background: var(--gradient-3); }
+        .card.color-4 .card-icon { background: var(--gradient-4); }
+
+        .card-body h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .card-body p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            color: var(--primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            gap: 5px;
+            transition: gap 0.2s ease;
+        }
+
+        .card:hover .card-footer {
+            gap: 10px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Responsive CSS Grid Boilerplate</h1>
+        <p>Mobil öncelikli (mobile-first) yaklaşımla hazırlanan, tüm cihazlarda (Mobil, Tablet, Dizüstü, Geniş Ekran) otomatik şekillenen modern cam efektli grid yapısı.</p>
+    </header>
+
+    <!-- Grid Container -->
+    <div class="grid-container">
+        
+        <!-- Card 1 -->
+        <div class="card color-1">
+            <div>
+                <div class="card-icon">
+                    <i class='bx bx-mobile-alt'></i>
+                </div>
+                <div class="card-body">
+                    <h3>1. Mobile-First Grid</h3>
+                    <p>Varsayılan mobil ekranda (&lt;768px) tüm kartlar tam genişlikte tek sütun olarak dikeyde sıralanır.</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                Detayları İncele <i class='bx bx-right-arrow-alt'></i>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card color-2">
+            <div>
+                <div class="card-icon">
+                    <i class='bx bx-tablet'></i>
+                </div>
+                <div class="card-body">
+                    <h3>2. Tablet Layout</h3>
+                    <p>Tablet ekran genişliğinde (768px - 1023px) grid yapısı otomatik olarak 2 eşit sütuna bölünür.</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                Detayları İncele <i class='bx bx-right-arrow-alt'></i>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card color-3">
+            <div>
+                <div class="card-icon">
+                    <i class='bx bx-laptop'></i>
+                </div>
+                <div class="card-body">
+                    <h3>3. Desktop Columns</h3>
+                    <p>Standart dizüstü ve masaüstü ekranlarda (1024px - 1439px) yerleşim 3 sütunlu profesyonel moda geçer.</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                Detayları İncele <i class='bx bx-right-arrow-alt'></i>
+            </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="card color-4">
+            <div>
+                <div class="card-icon">
+                    <i class='bx bx-expand-horizontal'></i>
+                </div>
+                <div class="card-body">
+                    <h3>4. Ultra-Wide Grid</h3>
+                    <p>1440px ve üzeri geniş ekran monitörlerde kartlar yan yana 4 sütun olarak yerleşerek boş alanları mükemmel doldurur.</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                Detayları İncele <i class='bx bx-right-arrow-alt'></i>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
