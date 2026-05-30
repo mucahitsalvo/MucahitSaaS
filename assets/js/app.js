@@ -3907,12 +3907,7 @@ function logout() {
     document.getElementById('contentArea').innerHTML = '';
 }
 
-// --- NOTIFICATION LOGIC ---
-let notifications = [
-    { id: 1, title: "MücahitSaaS'a Hoş Geldiniz!", desc: "Finansal yönetim panelinizi keşfetmeye başlayabilirsiniz.", time: "Şimdi", icon: "bx-party", color: "var(--success)" },
-    { id: 2, title: "Haftalık Rapor Hazır", desc: "Geçen haftanın gelir-gider raporu otomatik oluşturuldu.", time: "1 saat önce", icon: "bx-trending-up", color: "var(--primary)" },
-    { id: 3, title: "Ajanda Hatırlatıcısı", desc: "Bugün için ajandanıza eklenmiş bir not bulunuyor.", time: "2 saat önce", icon: "bx-calendar-star", color: "var(--warning)" }
-];
+let notifications = [];
 
 function toggleNotifications(event) {
     if (event) {
