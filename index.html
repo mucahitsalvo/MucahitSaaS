@@ -94,32 +94,130 @@
     <!-- MAIN APP -->
     <div class="app-container" id="appContainer" style="display: none;">
         <!-- Sidebar -->
-        <aside class="sidebar glass-panel-dark">
-            <div class="logo">
+        <aside class="sidebar glass-panel-dark" id="sidebarMenu">
+            <div class="logo" id="sidebarLogo">
                 <i class='bx bx-cube-alt'></i><span>Mücahit<span class="pro">SaaS</span></span>
             </div>
             <nav class="nav-menu">
-                <a href="#" class="nav-item active" data-page="dashboard">
-                    <i class='bx bx-grid-alt'></i> <span>Dashboard</span>
+                <!-- Güncel Durum / Dashboard -->
+                <a href="#" class="nav-item active" id="nav-dashboard" onclick="loadPage('dashboard')">
+                    <i class='bx bx-grid-alt'></i> <span>Güncel Durum</span>
                 </a>
-                <a href="#" class="nav-item" data-page="cariler">
-                    <i class='bx bx-group'></i> <span>Cari Hesaplar</span>
+
+                <!-- Asistan (Beta) -->
+                <a href="#" class="nav-item" id="nav-asistan" onclick="loadPage('asistan')">
+                    <i class='bx bx-sparkles'></i> <span>Asistan</span>
+                    <span class="badge-beta">Beta</span>
                 </a>
-                <a href="#" class="nav-item" data-page="urunler">
-                    <i class='bx bx-box'></i> <span>Ürünler / Stok</span>
+
+                <!-- Satışlar Dropdown -->
+                <div class="has-submenu" id="menu-satislar">
+                    <a href="#" class="nav-item" onclick="toggleSubmenu(event, 'submenu-satislar')">
+                        <i class='bx bx-download'></i> <span>Satışlar</span>
+                        <i class='bx bx-chevron-down toggle-icon'></i>
+                    </a>
+                    <ul class="submenu-list" id="submenu-satislar">
+                        <li><a href="#" class="submenu-item" onclick="loadPage('teklifler')">Teklifler</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('faturalar')">Faturalar</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('cariler')">Müşteriler</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('rapor-satislar')">Satışlar Raporu</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('rapor-tahsilatlar')">Tahsilatlar Raporu</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('rapor-gelirgider')">Gelir Gider Raporu</a></li>
+                    </ul>
+                </div>
+
+                <!-- Giderler Dropdown -->
+                <div class="has-submenu" id="menu-giderler">
+                    <a href="#" class="nav-item" onclick="toggleSubmenu(event, 'submenu-giderler')">
+                        <i class='bx bx-upload'></i> <span>Giderler</span>
+                        <i class='bx bx-chevron-down toggle-icon'></i>
+                    </a>
+                    <ul class="submenu-list" id="submenu-giderler">
+                        <li><a href="#" class="submenu-item" onclick="loadPage('giderler')">Gider Listesi</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('gelen-efaturalar')">Gelen e-Faturalar</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('cariler')">Tedarikçiler</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('personel')">Çalısanlar</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('rapor-giderler')">Giderler Raporu</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('rapor-odemeler')">Ödemeler Raporu</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('rapor-kdv')">KDV Raporu</a></li>
+                    </ul>
+                </div>
+
+                <!-- Nakit Dropdown -->
+                <div class="has-submenu" id="menu-nakit">
+                    <a href="#" class="nav-item" onclick="toggleSubmenu(event, 'submenu-nakit')">
+                        <i class='bx bx-wallet'></i> <span>Nakit</span>
+                        <i class='bx bx-chevron-down toggle-icon'></i>
+                    </a>
+                    <ul class="submenu-list" id="submenu-nakit">
+                        <li><a href="#" class="submenu-item" onclick="loadPage('kasalar')">Kasa ve Bankalar</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('cekSenetler')">Çekler</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('rapor-kasa')">Kasa / Banka Raporu</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('rapor-nakitakisi')">Nakit Akısı Raporu</a></li>
+                    </ul>
+                </div>
+
+                <!-- Stok Dropdown -->
+                <div class="has-submenu" id="menu-stok">
+                    <a href="#" class="nav-item" onclick="toggleSubmenu(event, 'submenu-stok')">
+                        <i class='bx bx-box'></i> <span>Stok</span>
+                        <i class='bx bx-chevron-down toggle-icon'></i>
+                    </a>
+                    <ul class="submenu-list" id="submenu-stok">
+                        <li><a href="#" class="submenu-item" onclick="loadPage('urunler')">Hizmet ve Ürünler</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('depolar')">Depolar</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('depo-transfer')">Depolar Arası Transfer</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('giden-irsaliye')">Giden İrsaliyeler</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('gelen-irsaliye')">Gelen İrsaliyeler</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('fiyat-listeleri')">Fiyat Listeleri</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('stok-gecmisi')">Stok Geçmisi</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('rapor-stok')">Stoktaki Ürünler Raporu</a></li>
+                    </ul>
+                </div>
+
+                <!-- E-Ticaret Dropdown -->
+                <div class="has-submenu" id="menu-eticaret">
+                    <a href="#" class="nav-item" onclick="toggleSubmenu(event, 'submenu-eticaret')">
+                        <i class='bx bx-rocket'></i> <span>E-Ticaret</span>
+                        <span class="badge-new">Yeni</span>
+                        <i class='bx bx-chevron-down toggle-icon'></i>
+                    </a>
+                    <ul class="submenu-list" id="submenu-eticaret">
+                        <li><a href="#" class="submenu-item" onclick="loadPage('eticaret-siparisler')">Siparisler</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('eticaret-entegrasyon')">Entegrasyonlar</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('eticaret-eslesme')">Eşlestirilen Ürünler</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('eticaret-ayarlar')">e-Ticaret Ayarları</a></li>
+                    </ul>
+                </div>
+
+                <!-- Uygulamalar -->
+                <a href="#" class="nav-item" id="nav-uygulamalar" onclick="loadPage('uygulamalar')">
+                    <i class='bx bx-plug'></i> <span>Uygulamalar</span>
                 </a>
-                <a href="#" class="nav-item" data-page="faturalar">
-                    <i class='bx bx-receipt'></i> <span>Faturalar</span>
+
+                <!-- Pazaryeri -->
+                <a href="#" class="nav-item" id="nav-pazaryeri" onclick="loadPage('pazaryeri')">
+                    <i class='bx bx-shopping-bag'></i> <span>Pazaryeri</span>
                 </a>
-                <a href="#" class="nav-item" data-page="kasalar">
-                    <i class='bx bx-credit-card-front'></i> <span>Kasa & Banka</span>
+
+                <!-- Menüyü Sakla -->
+                <a href="#" class="nav-item" id="nav-toggle-sidebar" onclick="toggleSidebar(event)" style="margin-top:auto; border-top:1px solid var(--border-light); padding-top:15px;">
+                    <i class='bx bx-chevrons-left' id="sidebarToggleIcon"></i> <span>Menüyü Sakla</span>
                 </a>
-                <a href="#" class="nav-item" data-page="takvim">
-                    <i class='bx bx-calendar'></i> <span>Takvim / Notlar</span>
-                </a>
-                <a href="#" class="nav-item" data-page="tickets">
-                    <i class='bx bx-support'></i> <span>Destek (Ticket)</span>
-                </a>
+
+                <!-- Ayarlar Dropdown -->
+                <div class="has-submenu" id="menu-ayarlar">
+                    <a href="#" class="nav-item" onclick="toggleSubmenu(event, 'submenu-ayarlar')">
+                        <i class='bx bx-cog'></i> <span>Ayarlar</span>
+                        <i class='bx bx-chevron-down toggle-icon'></i>
+                    </a>
+                    <ul class="submenu-list" id="submenu-ayarlar">
+                        <li><a href="#" class="submenu-item" onclick="loadPage('ayarlar')">Firma Bilgileri</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('ayarlar-etiketler')">Kategori ve Etiketler</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('ayarlar-kullanicilar')">Kullanıcılar</a></li>
+                        <li><a href="#" class="submenu-item" onclick="loadPage('ayarlar-sablonlar')">Yazdırma Şablonları</a></li>
+                    </ul>
+                </div>
             </nav>
             <div class="sidebar-bottom">
                 <div class="user-info">
@@ -175,12 +273,124 @@
         <div class="auth-box glass-panel" style="max-width: 500px; padding: 30px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
                 <h3 id="modalTitle">Yeni Ekle</h3>
-                <i class='bx bx-x' style="font-size:24px; cursor:pointer;" onclick="closeModal()"></i>
+                <i class='bx bx-x' style="font-size:24px; cursor:pointer; color:var(--text-primary);" onclick="closeModal()"></i>
             </div>
             <form id="genericForm">
                 <div id="modalBody" style="text-align:left;"></div>
                 <button type="submit" class="btn btn-primary w-100" style="margin-top:20px;">Kaydet</button>
             </form>
+        </div>
+    </div>
+    
+    <!-- PRINT PREVIEW MODAL -->
+    <div class="auth-screen" id="printPreviewModal" style="display:none; background: rgba(0,0,0,0.85); z-index: 1000;">
+        <div class="glass-panel" style="width:95%; max-width: 850px; max-height: 90vh; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-light); padding-bottom:15px;">
+                <h3 style="font-size:20px; color:#fff; display:flex; align-items:center; gap:8px;"><i class='bx bx-printer' style='color:var(--primary);'></i> Fatura Şablon Seçimi ve Baskı Ön İzleme</h3>
+                <i class='bx bx-x' style="font-size:28px; cursor:pointer; color:#fff;" onclick="closePrintPreview()"></i>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border-light);">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <label style="font-size:14px; font-weight:500; color:#fff;">Tasarım Şablonu:</label>
+                    <select id="printThemeSelector" onchange="updatePrintPreviewTheme()" style="padding:10px 15px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--border-light); border-radius:10px; cursor:pointer;">
+                        <option value="modern">Modern Indigo</option>
+                        <option value="classic">Klasik Kurumsal</option>
+                        <option value="minimal">Minimalist Karbon</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="executePrint()"><i class='bx bx-printer'></i> Yazdır / PDF Kaydet</button>
+            </div>
+            
+            <div id="printPreviewContent" style="background:#fff; color:#000; border-radius:12px; padding:30px; box-shadow:0 10px 30px rgba(0,0,0,0.25); min-height: 400px; overflow-x: auto;">
+                <!-- Live preview injected here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- SANAL POS MODAL -->
+    <div class="auth-screen" id="sanalPosModal" style="display:none; background: rgba(0,0,0,0.85); z-index: 1100;">
+        <div class="auth-box glass-panel" style="max-width: 450px; padding: 25px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid var(--border-light); padding-bottom:10px;">
+                <h3 style="font-size:18px; color:#fff;"><i class='bx bx-credit-card' style='color:var(--primary); margin-right:8px;'></i> Güvenli Ödeme Geçidi</h3>
+                <i class='bx bx-x' style="font-size:24px; cursor:pointer; color:var(--text-primary);" onclick="closeSanalPos()"></i>
+            </div>
+            
+            <div id="posFormContainer">
+                <!-- Visual Card Mockup -->
+                <div class="credit-card-container">
+                    <div class="credit-card-mockup" id="cardMockup">
+                        <div class="card-top-row">
+                            <div class="card-chip"></div>
+                            <div class="card-brand-logo" id="mockCardBrand">VISA</div>
+                        </div>
+                        <div class="card-num-row" id="mockCardNumber">•••• •••• •••• ••••</div>
+                        <div class="card-bottom-row">
+                            <div>
+                                <div class="card-meta-label">KART SAHİBİ</div>
+                                <div class="card-meta-val" id="mockCardHolder">İSİM SOYİSİM</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div class="card-meta-label">SON KUL.</div>
+                                <div class="card-meta-val" id="mockCardExpiry">MM/YY</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Billing Summary -->
+                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-light); padding:10px 15px; border-radius:10px; margin-bottom:15px; font-size:13px; text-align:left;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:var(--text-secondary);"><span>Fatura No:</span><span id="posInvoiceNo" style="font-weight:600; color:#fff;">-</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:var(--text-secondary);"><span>Müşteri:</span><span id="posCustomer" style="font-weight:600; color:#fff;">-</span></div>
+                    <div style="display:flex; justify-content:space-between; font-size:15px; font-weight:700; color:var(--primary);"><span>Ödenecek Tutar:</span><span id="posAmount">-</span></div>
+                </div>
+
+                <!-- Input Form -->
+                <form id="posPaymentForm" onsubmit="processPosPayment(event)">
+                    <div class="input-group">
+                        <i class='bx bx-user'></i>
+                        <input type="text" id="posCardHolder" placeholder="Kart Üzerindeki İsim" required oninput="updateCardMockup()">
+                    </div>
+                    <div class="input-group">
+                        <i class='bx bx-credit-card-alt'></i>
+                        <input type="text" id="posCardNumber" placeholder="Kart Numarası" maxlength="19" required oninput="formatCardNumber(this); updateCardMockup();">
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                        <div class="input-group">
+                            <i class='bx bx-calendar'></i>
+                            <input type="text" id="posExpiry" placeholder="AA/YY" maxlength="5" required oninput="formatExpiry(this); updateCardMockup();">
+                        </div>
+                        <div class="input-group">
+                            <i class='bx bx-lock-alt'></i>
+                            <input type="password" id="posCvv" placeholder="CVV" maxlength="3" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" style="margin-top:10px;">Ödemeyi Tamamla <i class='bx bx-lock-open-alt'></i></button>
+                </form>
+            </div>
+
+            <!-- Loader -->
+            <div id="posLoaderContainer" style="display:none; padding:40px 10px; text-align:center;">
+                <div style="font-size:40px; color:var(--primary); margin-bottom:15px;"><i class='bx bx-loader-alt bx-spin'></i></div>
+                <h4 style="color:#fff; margin-bottom:10px; font-size:16px;">İşlem Güvenli Kanalda Doğrulanıyor...</h4>
+                <p style="color:var(--text-secondary); font-size:13px; line-height:1.5;">Lütfen tarayıcınızı kapatmayın veya yenilemeyin. 3D Secure doğrulama protokolü başlatılıyor.</p>
+            </div>
+
+            <!-- 3D Secure SMS Verification Modal -->
+            <div id="pos3dContainer" style="display:none; padding:10px; text-align:left;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:15px; color:var(--warning);">
+                    <i class='bx bxs-shield-plus' style='font-size:24px;'></i>
+                    <h4 style="font-size:15px; color:#fff; font-weight:600;">3D Secure Mobil Doğrulama</h4>
+                </div>
+                <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin-bottom:15px;">
+                    Bankanızda kayıtlı cep telefonunuza gönderilen <strong>6 haneli şifreyi</strong> girin. (Simülasyon şifresi: <strong style="color:var(--primary)">123456</strong>)
+                </p>
+                <div class="input-group">
+                    <i class='bx bx-key'></i>
+                    <input type="text" id="posSmsCode" placeholder="Doğrulama Kodu" maxlength="6" style="text-align:center; font-weight:700; letter-spacing:4px;">
+                </div>
+                <button type="button" onclick="verify3dCode()" class="btn btn-primary w-100" style="margin-top:10px;">Kodu Doğrula & Öde <i class='bx bx-check-shield'></i></button>
+            </div>
         </div>
     </div>
     
