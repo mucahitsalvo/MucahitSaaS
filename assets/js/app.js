@@ -513,6 +513,15 @@ function loadPage(page) {
     const content = document.getElementById('contentArea');
     content.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100%;"><i class="bx bx-loader-alt bx-spin" style="font-size:40px;color:var(--primary)"></i></div>';
 
+    // Intercept with license blocker if trial has expired and no active license exists
+    const licenseDetails = getAppLicenseDetails();
+    if (licenseDetails.status === 'expired') {
+        setTimeout(() => {
+            renderFullscreenLicenseBlocker(content);
+        }, 100);
+        return;
+    }
+
     // Synchronize sidebar active tab (both main items and submenu items)
     document.querySelectorAll('.nav-item, .submenu-item').forEach(item => {
         item.classList.remove('active');
@@ -1613,15 +1622,146 @@ function selectDate(dateStr) {
 }
 
 function getLicenseStatus() {
-    const key = localStorage.getItem('saas_license_key') || '';
-    if (!key) {
-        return { active: false, type: 'Demo Sürüm', text: 'Lisanssız - Ticari Kullanım Yasaktır', color: 'var(--danger)', icon: 'bx-shield-x' };
+    const email = localStorage.getItem('user_email') || 'demo@kullanici.com';
+    const trialStartStr = localStorage.getItem(`saas_trial_start_${email}`);
+    if (!trialStartStr) {
+        localStorage.setItem(`saas_trial_start_${email}`, Date.now().toString());
     }
-    // Check if key is valid (must start with MS- and be at least 12 chars, or contain UNLOCKED)
-    if (key.startsWith('MS-') || key.includes('UNLOCKED') || key.length >= 12) {
-        return { active: true, type: 'Kurumsal Lisans', text: 'Lisans Etkinleştirildi (Sınırsız Ticari Lisans)', color: 'var(--success)', icon: 'bx-shield-quarter' };
+    const trialStart = parseInt(localStorage.getItem(`saas_trial_start_${email}`)) || Date.now();
+    const trialDuration = 30 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    
+    const key = localStorage.getItem(`saas_license_key_${email}`) || localStorage.getItem('saas_license_key') || '';
+    const licenseExpires = parseInt(localStorage.getItem(`saas_license_expires_${email}`)) || parseInt(localStorage.getItem('saas_license_expires')) || 0;
+    
+    const isLicensed = (key.startsWith('MS-') && licenseExpires > now);
+    const trialExpired = (now - trialStart > trialDuration);
+    
+    if (isLicensed) {
+        const days = Math.ceil((licenseExpires - now) / (24 * 60 * 60 * 1000));
+        return {
+            active: true,
+            type: '1 Yıllık Ticari Lisans',
+            text: `Lisans Etkinleştirildi (Kalan: ${days} Gün, Anahtar: ${key})`,
+            color: 'var(--success)',
+            icon: 'bx-shield-quarter'
+        };
     }
-    return { active: false, type: 'Geçersiz Lisans', text: 'Hatalı veya Süresi Dolmuş Lisans Anahtarı', color: 'var(--danger)', icon: 'bx-error-circle' };
+    
+    if (!trialExpired) {
+        const days = Math.ceil((trialStart + trialDuration - now) / (24 * 60 * 60 * 1000));
+        return {
+            active: true,
+            type: 'Deneme Sürümü (Ücretsiz)',
+            text: `MücahitSaaS 30 Günlük Deneme Sürümü (Kalan: ${days} Gün)`,
+            color: 'var(--warning)',
+            icon: 'bx-time-five'
+        };
+    }
+    
+    return {
+        active: false,
+        type: 'Deneme Süresi Doldu',
+        text: '30 günlük kullanım süresi dolmuştur. Lütfen 1 yıllık lisans satın alın.',
+        color: 'var(--danger)',
+        icon: 'bx-lock-alt'
+    };
+}
+
+function getAppLicenseDetails() {
+    const statusInfo = getLicenseStatus();
+    return {
+        status: statusInfo.type === 'Deneme Süresi Doldu' ? 'expired' : (statusInfo.type === 'Deneme Sürümü (Ücretsiz)' ? 'trial' : 'licensed'),
+        statusInfo: statusInfo
+    };
+}
+
+function renderFullscreenLicenseBlocker(container) {
+    const email = localStorage.getItem('user_email') || 'demo@kullanici.com';
+    const trialStart = parseInt(localStorage.getItem(`saas_trial_start_${email}`)) || Date.now();
+    const trialStartDate = new Date(trialStart).toLocaleDateString('tr-TR');
+    
+    container.innerHTML = `
+        <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:65vh; gap:24px; text-align:center;" class="fade-in">
+            <div style="font-size:80px; color:var(--danger); background:rgba(239,68,68,0.05); width:160px; height:160px; display:flex; justify-content:center; align-items:center; border-radius:50%; border:1px solid rgba(239,68,68,0.2);"><i class='bx bx-time-five'></i></div>
+            <div>
+                <h1 style="color:#fff; font-size:26px; margin-bottom:10px;">Deneme Süreniz Sona Erdi!</h1>
+                <p style="color:var(--text-secondary); font-size:14px; max-width:550px; line-height:1.6; margin-bottom: 20px;">
+                    MücahitSaaS ERP sisteminizi kullanmaya devam edebilmek için 1 Yıllık Kullanım Lisansı satın almanız gerekmektedir. 
+                    <br><span style="font-size:12px; color:var(--text-secondary);">Deneme Başlangıcı: ${trialStartDate} (30 günlük ücretsiz kullanım süresi dolmuştur.)</span>
+                </p>
+                
+                <div class="glass-panel" style="max-width: 400px; margin: 0 auto 24px auto; padding: 20px; border: 1px solid var(--border-light); background: rgba(255,255,255,0.01);">
+                    <div style="font-size: 13px; color:var(--text-secondary); margin-bottom: 5px;">MücahitSaaS 1 Yıllık Kullanım Lisansı</div>
+                    <div style="font-size: 24px; font-weight: 800; color: var(--primary);">1.200,00 ₺ <span style="font-size:13px; font-weight:normal; color:var(--text-secondary);">/ Yıl</span></div>
+                </div>
+
+                <div style="display:flex; gap:12px; justify-content:center; align-items:center; flex-wrap:wrap;">
+                    <button class="btn btn-primary btn-lg" onclick="buyAppLicense()"><i class='bx bx-credit-card'></i> Hemen 1 Yıllık Satın Al</button>
+                    <button class="btn" style="background:rgba(255,255,255,0.05); color:#fff; border:1px solid var(--border-light);" onclick="promptLicenseKeyInput()"><i class='bx bx-key'></i> Lisans Anahtarım Var</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function buyAppLicense() {
+    activePosInvoiceIndex = null;
+    activePosPurchaseModule = "MücahitSaaS 1 Yıllık Lisans";
+    
+    document.getElementById('sanalPosModal').style.display = 'flex';
+    document.getElementById('posFormContainer').style.display = 'block';
+    document.getElementById('posLoaderContainer').style.display = 'none';
+    document.getElementById('pos3dContainer').style.display = 'none';
+
+    document.getElementById('posInvoiceNo').innerText = `#LIC-ANNUAL`;
+    document.getElementById('posCustomer').innerText = `MücahitSaaS ERP Sistem Lisansı`;
+    document.getElementById('posAmount').innerText = formatMoney(1200);
+
+    document.getElementById('posCardHolder').value = '';
+    document.getElementById('posCardNumber').value = '';
+    document.getElementById('posExpiry').value = '';
+    document.getElementById('posCvv').value = '';
+    document.getElementById('posSmsCode').value = '';
+
+    updateCardMockup();
+}
+
+function promptLicenseKeyInput() {
+    const email = localStorage.getItem('user_email') || 'demo@kullanici.com';
+    const key = prompt("Lütfen 12 haneli MücahitSaaS Lisans Anahtarınızı girin:\n(Örn: MS-ANNUAL-2026)");
+    if (!key) return;
+    const cleanKey = key.trim().toUpperCase();
+    if (cleanKey.startsWith('MS-') && cleanKey.length >= 12) {
+        localStorage.setItem(`saas_license_key_${email}`, cleanKey);
+        localStorage.setItem(`saas_license_expires_${email}`, (Date.now() + 365 * 24 * 60 * 60 * 1000).toString());
+        alert("Lisans anahtarınız başarıyla doğrulandı! Uygulama 1 yıl süreyle etkinleştirildi.");
+        saveData();
+        loadPage('dashboard');
+    } else {
+        alert("Geçersiz lisans anahtarı formatı!");
+    }
+}
+
+function testExpireTrial() {
+    const email = localStorage.getItem('user_email') || 'demo@kullanici.com';
+    const thirtyFiveDaysAgo = Date.now() - (35 * 24 * 60 * 60 * 1000);
+    localStorage.setItem(`saas_trial_start_${email}`, thirtyFiveDaysAgo.toString());
+    localStorage.removeItem(`saas_license_key_${email}`);
+    localStorage.removeItem(`saas_license_expires_${email}`);
+    alert("Test: Deneme sürümü başlangıcı 35 gün öncesi olarak ayarlandı ve aktif lisans silindi! Sistem kilitlenecektir.");
+    saveData();
+    window.location.reload();
+}
+
+function testResetTrial() {
+    const email = localStorage.getItem('user_email') || 'demo@kullanici.com';
+    localStorage.setItem(`saas_trial_start_${email}`, Date.now().toString());
+    localStorage.removeItem(`saas_license_key_${email}`);
+    localStorage.removeItem(`saas_license_expires_${email}`);
+    alert("Test: Deneme süresi bugünden itibaren 30 gün olarak sıfırlandı!");
+    saveData();
+    window.location.reload();
 }
 
 function applyBranding() {
@@ -1696,8 +1836,12 @@ function renderAyarlar(container) {
                     <label for="set_license_key">Ürün Lisans Anahtarı</label>
                     <input type="text" id="set_license_key" value="${licenseKey}" placeholder="MS-XXXX-XXXX-XXXX">
                 </div>
-                <div style="font-size:12px; color:var(--text-secondary); line-height:1.4; padding: 10px; background:rgba(255,255,255,0.01); border-radius:8px;">
-                    💡 <strong>Not:</strong> Ticari satış veya white-label dağıtım yaptığınızda, müşteriye bir ürün lisans anahtarı tanımlayarak yazılımı doğrulatabilirsiniz.
+                <div style="font-size:12px; color:var(--text-secondary); line-height:1.4; padding: 10px; background:rgba(255,255,255,0.01); border-radius:8px; margin-bottom:12px;">
+                    💡 <strong>Bilgi:</strong> Sisteminiz ilk 1 ay (30 gün) tamamen ücretsiz çalışır. Deneme süresi bitiminde uygulamanın açılabilmesi için 1 Yıllık ücretli lisans alınmalıdır.
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn btn-sm" style="background:#ef4444; color:#fff;" onclick="testExpireTrial()"><i class='bx bx-time'></i> Deneme Süresini Bitir (Test)</button>
+                    <button class="btn btn-sm" style="background:#10b981; color:#fff;" onclick="testResetTrial()"><i class='bx bx-refresh'></i> Deneme Süresini Sıfırla (30 Gün)</button>
                 </div>
             </div>
 
@@ -1818,7 +1962,12 @@ function saveSettings() {
     localStorage.setItem('saas_company_tax_no', newCompanyTaxNo);
     localStorage.setItem('saas_company_phone', newCompanyPhone);
     localStorage.setItem('saas_company_address', newCompanyAddress);
-    localStorage.setItem('saas_license_key', newLicenseKey);
+    localStorage.setItem(`saas_license_key_${newEmail}`, newLicenseKey);
+    if (newLicenseKey.startsWith('MS-')) {
+        localStorage.setItem(`saas_license_expires_${newEmail}`, (Date.now() + 365 * 24 * 60 * 60 * 1000).toString());
+    } else {
+        localStorage.removeItem(`saas_license_expires_${newEmail}`);
+    }
     localStorage.setItem('saas_supabase_url', newSupabaseUrl);
     localStorage.setItem('saas_supabase_key', newSupabaseKey);
 
@@ -4544,6 +4693,30 @@ function verify3dCode() {
 
     if (activePosPurchaseModule) {
         const name = activePosPurchaseModule;
+        if (name === "MücahitSaaS 1 Yıllık Lisans") {
+            const key = "MS-ANNUAL-" + Math.floor(100000 + Math.random() * 900000);
+            const email = localStorage.getItem('user_email') || 'demo@kullanici.com';
+            localStorage.setItem(`saas_license_key_${email}`, key);
+            localStorage.setItem(`saas_license_expires_${email}`, (Date.now() + 365 * 24 * 60 * 60 * 1000).toString());
+            saveData();
+
+            notifications.unshift({
+                id: Date.now(),
+                title: "MücahitSaaS Etkinleştirildi",
+                desc: "1 Yıllık ERP Kullanım Lisansı başarıyla satın alındı ve aktif edildi.",
+                time: "Şimdi",
+                icon: "bx-shield-quarter",
+                color: "var(--success)"
+            });
+            if (typeof renderNotifications === 'function') renderNotifications();
+
+            alert("Tebrikler! MücahitSaaS ERP Lisansı 1 yıl süreyle başarıyla aktif edildi.");
+            activePosPurchaseModule = null;
+            closeSanalPos();
+            loadPage('dashboard');
+            return;
+        }
+
         if (!mockData.installedUygulamalar.includes(name)) {
             mockData.installedUygulamalar.push(name);
         }
