@@ -618,6 +618,58 @@ function renderAsistan(container) {
                 from { opacity: 0; transform: translateY(10px); }
                 to { opacity: 1; transform: translateY(0); }
             }
+            .asistan-chat-area {
+                display: none;
+                flex-direction: column;
+                gap: 16px;
+                background: #0b141a; /* WhatsApp Dark Mode Background */
+                border: 1px solid rgba(255,255,255,0.05);
+                border-radius: 16px;
+                padding: 24px;
+                max-height: 480px;
+                overflow-y: auto;
+                box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
+            }
+            .light-theme .asistan-chat-area {
+                background: #efeae2; /* WhatsApp Light Mode Background */
+                border: 1px solid rgba(0,0,0,0.08);
+                box-shadow: inset 0 2px 6px rgba(0,0,0,0.08);
+            }
+            .user-msg-bubble {
+                align-self: flex-end;
+                background: #005c4b; /* WhatsApp Dark Mode Green User Bubble */
+                color: #e9edef;
+                padding: 12px 18px;
+                border-radius: 16px 16px 0 16px;
+                max-width: 80%;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+                animation: slideInRight 0.25s ease;
+            }
+            .light-theme .user-msg-bubble {
+                background: #d9fdd3; /* WhatsApp Light Mode Green User Bubble */
+                color: #111b21;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            .asistan-msg-bubble {
+                align-self: flex-start;
+                background: #202c33; /* WhatsApp Dark Mode Grey Assistant Bubble */
+                border: 1px solid rgba(255,255,255,0.02);
+                color: #e9edef;
+                padding: 14px 18px;
+                border-radius: 16px 16px 16px 0;
+                max-width: 80%;
+                display: flex;
+                gap: 12px;
+                align-items: flex-start;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+                animation: slideInLeft 0.25s ease;
+            }
+            .light-theme .asistan-msg-bubble {
+                background: #ffffff; /* WhatsApp Light Mode White Assistant Bubble */
+                border: 1px solid rgba(0,0,0,0.08);
+                color: #111b21;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
         </style>
         <div class="page-header fade-in">
             <div>
@@ -629,7 +681,7 @@ function renderAsistan(container) {
         <div style="max-width: 700px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px;" class="fade-in">
             <!-- Welcome Card -->
             <div id="asistanWelcomeCard" style="text-align: center; padding: 30px 10px; background: rgba(255,255,255,0.01); border: 1px solid var(--border-light); border-radius: 16px;">
-                <div style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"><i class='bx bx-sparkles'></i></div>
+                <div style="font-size: 50px; color: #25d366; margin-bottom: 15px;"><i class='bx bx-sparkles'></i></div>
                 <h2 style="color: #fff; font-size: 22px; font-weight: 700; margin-bottom: 10px;">MücahitSaaS Asistan</h2>
                 <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
                     Size nasıl yardımcı olabilirim? Aşağıdaki sorulardan bir seçim yapabilirsiniz.
@@ -637,25 +689,25 @@ function renderAsistan(container) {
             </div>
 
             <!-- Chat History Area -->
-            <div id="asistanChatArea" style="display: none; flex-direction: column; gap: 20px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-light); border-radius: 16px; padding: 24px; max-height: 480px; overflow-y: auto; box-shadow: inset 0 4px 12px rgba(0,0,0,0.5);">
+            <div id="asistanChatArea" class="asistan-chat-area">
             </div>
 
             <!-- Question Selector (Options) -->
             <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;" id="asistanQuestionContainer">
                 <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('ciro', 'Bu ayki cirom nedir?')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
-                    <i class='bx bx-trending-up' style='color:var(--primary)'></i> Bu ayki cirom nedir?
+                    <i class='bx bx-trending-up' style='color:#25d366'></i> Bu ayki cirom nedir?
                 </button>
                 <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('kar', 'Bu ay toplam kârım nedir?')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
-                    <i class='bx bx-pie-chart-alt-2' style='color:var(--primary)'></i> Bu ay toplam kârım nedir?
+                    <i class='bx bx-pie-chart-alt-2' style='color:#25d366'></i> Bu ay toplam kârım nedir?
                 </button>
                 <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('tahsilat', 'Bu ay ne kadar tahsilat yaptım?')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
-                    <i class='bx bx-wallet' style='color:var(--primary)'></i> Bu ay ne kadar tahsilat yaptım?
+                    <i class='bx bx-wallet' style='color:#25d366'></i> Bu ay ne kadar tahsilat yaptım?
                 </button>
                 <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('giris', 'Bu ayki toplam kasa ve banka girişim nedir?')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
-                    <i class='bx bx-credit-card' style='color:var(--primary)'></i> Bu ayki toplam kasa ve banka girişim nedir?
+                    <i class='bx bx-credit-card' style='color:#25d366'></i> Bu ayki toplam kasa ve banka girişim nedir?
                 </button>
                 <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('musteri', 'Bu ay kaç tekil müşteri alışveriş yaptı?')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
-                    <i class='bx bx-group' style='color:var(--primary)'></i> Bu ay kaç tekil müşteri alışveriş yaptı?
+                    <i class='bx bx-group' style='color:#25d366'></i> Bu ay kaç tekil müşteri alışveriş yaptı?
                 </button>
             </div>
             
@@ -712,18 +764,18 @@ function askAsistan(topic, questionText) {
     
     // Create user query bubble
     const userBubble = `
-        <div style="align-self: flex-end; background: var(--primary); color: #fff; padding: 12px 18px; border-radius: 16px 16px 0 16px; max-width: 80%; box-shadow: 0 4px 10px rgba(0,0,0,0.15); animation: slideInRight 0.25s ease;">
+        <div class="user-msg-bubble">
             ${questionText}
         </div>
     `;
 
     // Create assistant response bubble
     const asistanBubble = `
-        <div style="align-self: flex-start; background: rgba(255,255,255,0.04); border: 1px solid var(--border-light); color: #fff; padding: 14px 18px; border-radius: 16px 16px 16px 0; max-width: 80%; display: flex; gap: 12px; align-items: flex-start; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: slideInLeft 0.25s ease;">
-            <div style="font-size: 24px; color: var(--primary); flex-shrink: 0; margin-top: 2px;"><i class='bx bx-bot'></i></div>
+        <div class="asistan-msg-bubble">
+            <div style="font-size: 24px; color: #25d366; flex-shrink: 0; margin-top: 2px;"><i class='bx bx-bot'></i></div>
             <div>
                 <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">MücahitSaaS Asistan</div>
-                <div style="font-size: 14px; line-height: 1.5; color: #fff;">${responseText}</div>
+                <div style="font-size: 14px; line-height: 1.5; color: inherit;">${responseText}</div>
             </div>
         </div>
     `;
