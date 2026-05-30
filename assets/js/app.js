@@ -542,6 +542,12 @@ function loadPage(page) {
                 return;
             }
 
+            // Blocker for E-Fatura Entegrasyonu (Uygulama)
+            if (page === 'gelen-efaturalar' && !mockData.installedUygulamalar.includes("E-Fatura Entegrasyonu")) {
+                renderApplicationBlocker(content, "E-Fatura Entegrasyonu", "Uygulama Marketi");
+                return;
+            }
+
             if (page === 'dashboard') renderDashboard(content);
             else if (page === 'cariler') renderCariler(content);
             else if (page === 'urunler') renderUrunler(content);
@@ -1153,16 +1159,23 @@ function renderCariler(container) {
                 <thead><tr><th>Ünvan</th><th>Tür</th><th>Bakiye Durumu</th><th>İşlem</th></tr></thead>
                 <tbody>
                     ${mockData.cariler.length === 0 ? '<tr><td colspan="4" style="text-align:center;">Henüz veri eklenmedi.</td></tr>' : 
-                      mockData.cariler.map((c, i) => `
+                      mockData.cariler.map((c, i) => {
+                        const portalBtn = mockData.installedUygulamalar.includes("Müşteri Portalı") ? 
+                            `<button class="btn btn-sm" style="background:#6366f1; color:#fff;" onclick="copyClientPortalLink('${c.unvan}')" title="Müşteri Portalı Linki Kopyala"><i class='bx bx-link-external'></i> Portal</button>` : '';
+                        return `
                         <tr>
                             <td style="font-weight:600; color:var(--text-primary); cursor:pointer;" onclick="viewCariDetail('${c.unvan}')" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-primary)'">
                                 <i class='bx bx-user-pin' style="margin-right:8px; color:var(--primary);"></i>${c.unvan}
                             </td>
                             <td>${c.tur}</td>
                             <td style="font-weight:600; color:${c.bakiye >= 0 ? 'var(--success)' : 'var(--danger)'}">${formatMoney(Math.abs(c.bakiye))} ${c.bakiye >= 0 ? '(Alacaklı)' : '(Borçlu)'}</td>
-                            <td><button class="btn btn-sm" style="background:var(--danger);color:#fff" onclick="deleteData('cariler', ${i})"><i class='bx bx-trash'></i></button></td>
+                            <td style="display:flex; gap:6px;">
+                                ${portalBtn}
+                                <button class="btn btn-sm" style="background:var(--danger);color:#fff" onclick="deleteData('cariler', ${i})"><i class='bx bx-trash'></i></button>
+                            </td>
                         </tr>
-                    `).join('')}
+                        `;
+                      }).join('')}
                 </tbody>
             </table>
         </div>
@@ -3349,6 +3362,19 @@ Adres: ${companyAddress}</pre>
     if (printContainer) {
         printContainer.innerHTML = previewContent.innerHTML;
     }
+
+    // Render dynamic action buttons
+    const btnContainer = document.getElementById('printPreviewButtons');
+    if (btnContainer) {
+        let buttonsHTML = `<button class="btn btn-primary" onclick="executePrint()"><i class='bx bx-printer'></i> Yazdır / PDF Kaydet</button>`;
+        if (mockData.installedUygulamalar.includes("E-Fatura Entegrasyonu") && f.tur === 'Satış') {
+            const isSent = f.eFaturaGönderildi;
+            buttonsHTML += isSent ? 
+                `<button class="btn" style="background:#10b98120; color:#10b981; border:1px solid #10b98150; cursor:default;" disabled><i class='bx bx-check-double'></i> e-Fatura Gönderildi</button>` :
+                `<button class="btn" style="background:#10b981; color:#fff;" onclick="sendMockEInvoice(${index})"><i class='bx bx-send'></i> e-Fatura Gönder (GİB)</button>`;
+        }
+        btnContainer.innerHTML = buttonsHTML;
+    }
 }
 
 function executePrint() {
@@ -3480,7 +3506,12 @@ function openModal(type) {
             <div style="border:1px solid var(--border-light); border-radius:12px; padding:15px; margin-bottom:15px; background:rgba(0,0,0,0.2);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <h4 style="font-size:14px; margin:0;">Fatura Kalemleri</h4>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="addInvoiceItemRow()"><i class='bx bx-plus'></i> Kalem Ekle</button>
+                    <div style="display:flex; gap:8px;">
+                        ${mockData.installedUygulamalar.includes("Barkod Okuyucu Entegrasyonu") ? 
+                            `<button type="button" class="btn btn-sm" style="background:#10b981; color:#fff;" onclick="startBarcodeScanDemo()"><i class='bx bx-barcode-reader'></i> Barkod Tara</button>` : ''
+                        }
+                        <button type="button" class="btn btn-sm btn-primary" onclick="addInvoiceItemRow()"><i class='bx bx-plus'></i> Kalem Ekle</button>
+                    </div>
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="invoice-items-table">
@@ -5292,6 +5323,239 @@ function uninstallApplication(name, isModule = false) {
     } else {
         renderUygulamalar(document.getElementById('contentArea'));
     }
+}
+
+// --- FREE APPLICATIONS MOCK INTEGRATIONS ---
+
+function renderApplicationBlocker(container, name, marketName) {
+    container.innerHTML = `
+        <div class="page-header fade-in">
+            <div>
+                <h1 style="margin-bottom:5px;">${name}</h1>
+                <p style="color:var(--text-secondary)">Modül Entegrasyonu Gerekli</p>
+            </div>
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:60vh; gap:24px; text-align:center;" class="fade-in">
+            <div style="font-size:80px; color:var(--primary); background:rgba(99,102,241,0.05); width:160px; height:160px; display:flex; justify-content:center; align-items:center; border-radius:50%; border:1px solid rgba(99,102,241,0.2);"><i class='bx bx-envelope'></i></div>
+            <div>
+                <h3 style="color:#fff; font-size:20px; margin-bottom:8px;">Bu özellik için ücretsiz eklenti kurulmalıdır!</h3>
+                <p style="color:var(--text-secondary); font-size:13px; max-width:450px; line-height:1.6; margin-bottom: 20px;">
+                    Gelen e-Faturaları listelemek, onaylamak ve otomatik gider kaydetmek için <strong>Uygulama Marketi</strong>'nden <strong>E-Fatura Entegrasyonu</strong> eklentisini kurmalısınız.
+                </p>
+                <button class="btn btn-primary" onclick="loadPage('uygulamalar')"><i class='bx bx-store'></i> Uygulama Marketine Git (Ücretsiz)</button>
+            </div>
+        </div>
+    `;
+}
+
+function sendMockEInvoice(index) {
+    const f = mockData.faturalar[index];
+    if (!f) return;
+    
+    const btnContainer = document.getElementById('printPreviewButtons');
+    if (btnContainer) {
+        btnContainer.innerHTML = `<button class="btn btn-success" disabled><i class="bx bx-loader-alt bx-spin"></i> GİB Portalına Gönderiliyor...</button>`;
+    }
+    
+    setTimeout(() => {
+        f.eFaturaGönderildi = true;
+        f.fatura_seri = "MS2026" + Math.floor(100000000 + Math.random() * 900000000);
+        dbSaveItem('faturalar', f);
+        saveData();
+        
+        if (mockData.installedUygulamalar.includes("SMS Bildirim Modülü")) {
+            sendMockSMS(
+                "e-Fatura Bilgilendirmesi", 
+                "+90 532 123 45 67", 
+                `Sayın Müşterimiz, ${mockData.saas_company_name || 'MücahitSaaS'} tarafından adınıza düzenlenen ${f.fatura_seri} numaralı e-Fatura oluşturulmuştur.`
+            );
+        }
+
+        notifications.unshift({
+            id: Date.now(),
+            title: "e-Fatura Başarıyla Gönderildi",
+            desc: `${f.cari} adına ${f.fatura_seri} nolu e-Fatura GİB portalına iletildi.`,
+            time: "Şimdi",
+            icon: "bx-send",
+            color: "var(--success)"
+        });
+        if (typeof renderNotifications === 'function') renderNotifications();
+
+        alert(`e-Fatura başarıyla resmileştirildi ve GİB portalına iletildi!\nFatura Seri No: ${f.fatura_seri}`);
+        updatePrintPreviewTheme();
+    }, 1500);
+}
+
+function sendMockSMS(title, number, message) {
+    let smsToaster = document.getElementById('smsMockToaster');
+    if (!smsToaster) {
+        smsToaster = document.createElement('div');
+        smsToaster.id = 'smsMockToaster';
+        smsToaster.setAttribute('style', `
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 320px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            transform: translateY(150%);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+        `);
+        document.body.appendChild(smsToaster);
+    }
+    
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(880.00, audioCtx.currentTime + 0.15);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.15);
+    } catch (e) {
+        console.log("Audio play blocked/failed", e);
+    }
+
+    smsToaster.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
+            <div style="width:32px; height:32px; border-radius:50%; background:#10b981; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px;">
+                <i class='bx bx-message-rounded-dots'></i>
+            </div>
+            <div>
+                <div style="font-size:13px; font-weight:700; color:#fff;">SMS Gönderildi (Modül)</div>
+                <div style="font-size:11px; color:var(--text-secondary);">${number}</div>
+            </div>
+        </div>
+        <div style="font-size:12px; line-height:1.5; color:rgba(255,255,255,0.85); font-weight:500;">
+            <strong>${title}</strong><br>
+            ${message}
+        </div>
+        <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; font-size:10px; color:var(--text-secondary)">
+            <span>SMS Entegrasyonu Aktif</span>
+            <span>Şimdi</span>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        smsToaster.style.transform = 'translateY(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        smsToaster.style.transform = 'translateY(150%)';
+    }, 5000);
+}
+
+function startBarcodeScanDemo() {
+    let scanOverlay = document.getElementById('barcodeScanOverlay');
+    if (!scanOverlay) {
+        scanOverlay = document.createElement('div');
+        scanOverlay.id = 'barcodeScanOverlay';
+        scanOverlay.setAttribute('style', `
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.9);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+        `);
+        document.body.appendChild(scanOverlay);
+    }
+    
+    scanOverlay.innerHTML = `
+        <div style="width: 280px; height: 280px; border: 4px solid var(--primary); border-radius: 20px; position: relative; overflow: hidden; box-shadow: 0 0 50px rgba(99,102,241,0.5); background:#020617;">
+            <div style="position: absolute; width: 100%; height: 4px; background: #ef4444; top: 0; left: 0; box-shadow: 0 0 15px #ef4444; animation: scannerLine 2s linear infinite;"></div>
+            <div style="width: 100%; height: 100%; opacity: 0.15; background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 10px 10px; display:flex; align-items:center; justify-content:center;"></div>
+            <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 11px; color: rgba(255,255,255,0.7); font-weight:600; text-transform:uppercase; letter-spacing:1px; white-space:nowrap;">Kamera Aktif</div>
+        </div>
+        <h3 style="margin-top:24px; font-size:18px; font-weight:600; color:#fff;">Barkod Okunuyor...</h3>
+        <p style="color:var(--text-secondary); font-size:13px; max-width: 250px; text-align: center; line-height: 1.5; margin-top:8px;">Lütfen ürün barkodunu kameraya hizalayın.</p>
+        <button class="btn btn-sm" style="margin-top:20px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1);" onclick="closeBarcodeScanDemo()">İptal Et</button>
+        <style>
+            @keyframes scannerLine {
+                0% { top: 0%; }
+                50% { top: 100%; }
+                100% { top: 0%; }
+            }
+        </style>
+    `;
+    scanOverlay.style.display = 'flex';
+
+    setTimeout(() => {
+        if (scanOverlay.style.display === 'none') return;
+        
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        } catch (e) {
+            console.log("Audio beep failed", e);
+        }
+
+        const randUrun = mockData.urunler[Math.floor(Math.random() * mockData.urunler.length)];
+        if (randUrun) {
+            addInvoiceItemRow();
+            const rows = document.querySelectorAll('#invoiceItemsTableBody tr');
+            const lastRow = rows[rows.length - 1];
+            if (lastRow) {
+                const select = lastRow.querySelector('.item-prod-select');
+                if (select) {
+                    select.value = randUrun.ad;
+                    onInvoiceItemProductChange(lastRow.id.replace('item-row-', ''), select);
+                }
+            }
+        }
+        
+        closeBarcodeScanDemo();
+        
+        notifications.unshift({
+            id: Date.now(),
+            title: "Barkod Okundu",
+            desc: `Okutulan barkod ile "${randUrun ? randUrun.ad : 'Ürün'}" faturaya eklendi.`,
+            time: "Şimdi",
+            icon: "bx-barcode-reader",
+            color: "var(--success)"
+        });
+        if (typeof renderNotifications === 'function') renderNotifications();
+    }, 2500);
+}
+
+function closeBarcodeScanDemo() {
+    const scanOverlay = document.getElementById('barcodeScanOverlay');
+    if (scanOverlay) scanOverlay.style.display = 'none';
+}
+
+function copyClientPortalLink(cariUnvan) {
+    const slug = btoa(unescape(encodeURIComponent(cariUnvan))).replace(/=/g, '').substring(0, 10).toLowerCase();
+    const url = `https://portal.mucahitsaas.com/client/${slug}`;
+    navigator.clipboard.writeText(url).then(() => {
+        alert(`Müşteri Portalı Linki başarıyla panoya kopyalandı:\n${url}\nMüşteriniz bu link üzerinden cari ekstresini ve borçlarını şifresiz/güvenli olarak görüntüleyebilir.`);
+    }).catch(err => {
+        alert(`Kopyalama Başarısız: ${err}`);
+    });
 }
 
 function renderAyarlarEtiketler(container) {
