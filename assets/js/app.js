@@ -535,6 +535,13 @@ function loadPage(page) {
 
     setTimeout(() => {
         try {
+            // Blocker for Çoklu Depo Yönetim Modülü (Premium)
+            const needsDepotModule = ['depolar', 'depo-transfer', 'giden-irsaliye', 'gelen-irsaliye'].includes(page);
+            if (needsDepotModule && !mockData.installedUygulamalar.includes("Çoklu Depo Yönetim Modülü")) {
+                renderPremiumBlocker(content, "Çoklu Depo Yönetim Modülü", 499);
+                return;
+            }
+
             if (page === 'dashboard') renderDashboard(content);
             else if (page === 'cariler') renderCariler(content);
             else if (page === 'urunler') renderUrunler(content);
@@ -587,6 +594,27 @@ function loadPage(page) {
             </div>`;
         }
     }, 200); 
+}
+
+function renderPremiumBlocker(container, name, price) {
+    container.innerHTML = `
+        <div class="page-header fade-in">
+            <div>
+                <h1 style="margin-bottom:5px;">${name}</h1>
+                <p style="color:var(--text-secondary)">Premium Eklenti Kilidi</p>
+            </div>
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:60vh; gap:24px; text-align:center;" class="fade-in">
+            <div style="font-size:80px; color:var(--secondary); background:rgba(236,72,153,0.05); width:160px; height:160px; display:flex; justify-content:center; align-items:center; border-radius:50%; border:1px solid rgba(236,72,153,0.2);"><i class='bx bx-lock-alt'></i></div>
+            <div>
+                <h3 style="color:#fff; font-size:20px; margin-bottom:8px;">Bu modül premium yetki gerektiriyor!</h3>
+                <p style="color:var(--text-secondary); font-size:13px; max-width:450px; line-height:1.6; margin-bottom: 20px;">
+                    Çoklu depo tanımlama, depolar arası transfer ve sevk irsaliyeleri yönetimi özelliklerini kullanabilmek için <strong>${name}</strong> eklentisini satın almanız gerekmektedir.
+                </p>
+                <button class="btn btn-primary" onclick="buyPremiumModule('${name}', ${price})"><i class='bx bx-credit-card'></i> Modülü Satın Al (${price} ₺)</button>
+            </div>
+        </div>
+    `;
 }
 
 function renderPlaceholderPage(container, title, description, icon) {
@@ -797,6 +825,36 @@ function renderDashboard(container) {
         if(f.tur === 'Alış') gider += total;
     });
 
+    // AI Cashflow Forecast Card Integration
+    let aiForecastHTML = '';
+    if (mockData.installedUygulamalar.includes("Akıllı Finans Tahminleme (AI)")) {
+        aiForecastHTML = `
+            <div class="glass-panel" style="margin-top:24px; padding:24px; border:1px solid rgba(139,92,246,0.3); background: linear-gradient(135deg, rgba(139,92,246,0.05), rgba(99,102,241,0.05)); animation: fadeIn 0.4s ease;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                    <div style="font-size:24px; color:#8b5cf6;"><i class='bx bx-sparkles'></i></div>
+                    <h3 style="font-size:16px; color:#fff; margin:0; font-weight:600;">Yapay Zeka Nakit Akışı Öngörüsü (AI)</h3>
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+                    <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-light); padding:15px; border-radius:12px;">
+                        <div style="font-size:12px; color:var(--text-secondary);">Haziran 2026 Nakit Tahmini</div>
+                        <div style="font-size:18px; font-weight:700; color:var(--success); margin-top:4px;">+145.000 TL</div>
+                        <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">Güven Aralığı: %92</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-light); padding:15px; border-radius:12px;">
+                        <div style="font-size:12px; color:var(--text-secondary);">Temmuz 2026 Nakit Tahmini</div>
+                        <div style="font-size:18px; font-weight:700; color:var(--success); margin-top:4px;">+160.000 TL</div>
+                        <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">Güven Aralığı: %87</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-light); padding:15px; border-radius:12px;">
+                        <div style="font-size:12px; color:var(--text-secondary);">Ağustos 2026 Nakit Tahmini</div>
+                        <div style="font-size:18px; font-weight:700; color:var(--danger); margin-top:4px;">-12.000 TL (Mevsimsel Duraksama)</div>
+                        <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">Güven Aralığı: %81</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     // Check upcoming Cheques / Notes
     let upcomingCekAlertHTML = '';
     const today = new Date();
@@ -879,6 +937,8 @@ function renderDashboard(container) {
                 </div>
             </div>
         </div>
+
+        ${aiForecastHTML}
         
         <div class="dashboard-grid fade-in" style="animation-delay: 0.3s; grid-template-columns: 1fr; margin-top: 24px;">
             <div class="glass-panel table-container">
@@ -1140,10 +1200,13 @@ function renderUrunler(container) {
 }
 
 function renderFaturalar(container) {
+    const excelBtn = mockData.installedUygulamalar.includes("Excel Toplu Fatura Aktarımı") ? 
+        `<button class="btn btn-sm" style="background:#10b981; color:#fff;" onclick="importExcelDemo()"><i class='bx bx-file-blank'></i> Excel'den Aktar</button>` : '';
     container.innerHTML = `
         <div class="page-header fade-in">
             <div><h1 style="margin-bottom:5px;">Faturalar</h1><p style="color:var(--text-secondary)">Kesilen ve alınan faturalar</p></div>
-            <div style="display:flex; gap:10px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+                ${excelBtn}
                 <button class="btn btn-primary btn-sm" onclick="downloadFaturalarCSV()"><i class='bx bx-download'></i> Rapor İndir</button>
                 <button class="btn btn-primary btn-sm" onclick="openModal('fatura')"><i class='bx bx-plus'></i> Fatura Oluştur</button>
             </div>
@@ -1174,6 +1237,36 @@ function renderFaturalar(container) {
             </table>
         </div>
     `;
+}
+
+function importExcelDemo() {
+    const confirmed = confirm("Excel dosyasından toplu fatura yükleme simülasyonunu başlatmak istiyor musunuz?");
+    if (!confirmed) return;
+    
+    const sampleInvoices = [
+        { tutar: 5000, kdv_orani: 20, kdv_tutari: 1000, genel_toplam: 6000, cari: "Ahmet Yılmaz İnşaat", tur: "Satış", tarih: new Date().toISOString().split('T')[0], durum: "Ödenmedi", kategori: "Toplu Satış", kalemler: [{ urun: "Web Tasarım Hizmeti", miktar: 1, fiyat: 5000 }] },
+        { tutar: 15000, kdv_orani: 20, kdv_tutari: 3000, genel_toplam: 18000, cari: "Doruk Lojistik A.Ş.", tur: "Alış", tarih: new Date().toISOString().split('T')[0], durum: "Ödendi", kategori: "Toplu Alış", kalemler: [{ urun: "SEO Danışmanlığı", miktar: 2, fiyat: 7500 }] },
+        { tutar: 2500, kdv_orani: 20, kdv_tutari: 500, genel_toplam: 3000, cari: "Ahmet Yılmaz İnşaat", tur: "Satış", tarih: new Date().toISOString().split('T')[0], durum: "Ödenmedi", kategori: "Destek Hizmeti", kalemler: [{ urun: "Barındırma Hizmeti", miktar: 1, fiyat: 2500 }] }
+    ];
+
+    sampleInvoices.forEach(f => {
+        mockData.faturalar.push(f);
+        dbSaveItem('faturalar', f);
+    });
+    saveData();
+
+    notifications.unshift({
+        id: Date.now(),
+        title: "Excel Toplu Fatura Aktarımı",
+        desc: "Excel dosyasından 3 adet fatura başarıyla içeri aktarıldı.",
+        time: "Şimdi",
+        icon: "bx-file-blank",
+        color: "var(--success)"
+    });
+    if (typeof renderNotifications === 'function') renderNotifications();
+
+    alert("Excel dosyasından 3 adet fatura başarıyla okundu ve sisteme kaydedildi!");
+    loadPage('faturalar');
 }
 
 function renderTickets(container) {
@@ -4299,10 +4392,13 @@ function showSimToast(message) {
 }
 
 // --- SANAL POS GATEWAY SIMULATOR ---
+// --- SANAL POS GATEWAY SIMULATOR ---
 let activePosInvoiceIndex = null;
+let activePosPurchaseModule = null;
 
 function openSanalPos(index) {
     activePosInvoiceIndex = index;
+    activePosPurchaseModule = null;
     const f = mockData.faturalar[index];
     if (!f) return;
 
@@ -4314,6 +4410,28 @@ function openSanalPos(index) {
     document.getElementById('posInvoiceNo').innerText = `#MS-${1000 + index}`;
     document.getElementById('posCustomer').innerText = f.cari;
     document.getElementById('posAmount').innerText = formatMoney(f.genel_toplam || f.tutar);
+
+    document.getElementById('posCardHolder').value = '';
+    document.getElementById('posCardNumber').value = '';
+    document.getElementById('posExpiry').value = '';
+    document.getElementById('posCvv').value = '';
+    document.getElementById('posSmsCode').value = '';
+
+    updateCardMockup();
+}
+
+function buyPremiumModule(name, amount) {
+    activePosInvoiceIndex = null;
+    activePosPurchaseModule = name;
+    
+    document.getElementById('sanalPosModal').style.display = 'flex';
+    document.getElementById('posFormContainer').style.display = 'block';
+    document.getElementById('posLoaderContainer').style.display = 'none';
+    document.getElementById('pos3dContainer').style.display = 'none';
+
+    document.getElementById('posInvoiceNo').innerText = `#MKT-PURCHASE`;
+    document.getElementById('posCustomer').innerText = `MücahitSaaS Premium Lisans`;
+    document.getElementById('posAmount').innerText = formatMoney(amount);
 
     document.getElementById('posCardHolder').value = '';
     document.getElementById('posCardNumber').value = '';
@@ -4390,6 +4508,30 @@ function verify3dCode() {
     const code = document.getElementById('posSmsCode').value.trim();
     if (code !== '123456') {
         alert("Hatalı doğrulama kodu! Lütfen tekrar deneyin. (Simülasyon şifresi: 123456)");
+        return;
+    }
+
+    if (activePosPurchaseModule) {
+        const name = activePosPurchaseModule;
+        if (!mockData.installedUygulamalar.includes(name)) {
+            mockData.installedUygulamalar.push(name);
+        }
+        saveData();
+
+        notifications.unshift({
+            id: Date.now(),
+            title: "Premium Modül Kilidi Açıldı",
+            desc: `${name} başarıyla satın alındı ve özellikleri sisteme dahil edildi.`,
+            time: "Şimdi",
+            icon: "bx-package",
+            color: "var(--success)"
+        });
+        if (typeof renderNotifications === 'function') renderNotifications();
+
+        alert(`Tebrikler! ${name} başarıyla satın alındı ve tüm kilitler kaldırıldı.`);
+        activePosPurchaseModule = null;
+        closeSanalPos();
+        loadPage(CURRENT_PAGE);
         return;
     }
 
@@ -5109,30 +5251,47 @@ function installApplication(name) {
 
 function renderPazaryeri(container) {
     const modules = [
-        { ad: "Çoklu Depo Yönetim Modülü", desc: "Sınırsız sayıda depo ve depolar arası transfer yetenekleri kilidi.", fiyat: "499 ₺ / Yıl", icon: "bx-buildings" },
-        { ad: "Excel Toplu Fatura Aktarımı", desc: "Excel veya XML faturalarınızı tek tıklamayla sisteme yükleyin.", fiyat: "299 ₺ / Ömür Boyu", icon: "bx-file-blank" },
-        { ad: "Akıllı Finans Tahminleme (AI)", desc: "AI yardımıyla gelecek ayların nakit akışı ve ciro öngörüsü.", fiyat: "199 ₺ / Ay", icon: "bx-sparkles" }
+        { ad: "Çoklu Depo Yönetim Modülü", desc: "Sınırsız sayıda depo ve depolar arası transfer yetenekleri kilidi.", fiyat: "499 ₺ / Yıl", tutar: 499, icon: "bx-buildings" },
+        { ad: "Excel Toplu Fatura Aktarımı", desc: "Excel veya XML faturalarınızı tek tıklamayla sisteme yükleyin.", fiyat: "299 ₺ / Ömür Boyu", tutar: 299, icon: "bx-file-blank" },
+        { ad: "Akıllı Finans Tahminleme (AI)", desc: "AI yardımıyla gelecek ayların nakit akışı ve ciro öngörüsü.", fiyat: "199 ₺ / Ay", tutar: 199, icon: "bx-sparkles" }
     ];
     container.innerHTML = `
         <div class="page-header fade-in">
             <div><h1 style="margin-bottom:5px;">Eklenti Pazaryeri</h1><p style="color:var(--text-secondary)">Premium modüller ve kurumsal çözümler pazarı</p></div>
         </div>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:24px;" class="fade-in">
-            ${modules.map(m => `
-                <div class="glass-panel" style="padding:24px; display:flex; flex-direction:column; justify-content:space-between; gap:16px;">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:48px; height:48px; border-radius:12px; background:rgba(236,72,153,0.1); color:var(--secondary); font-size:24px; display:flex; align-items:center; justify-content:center;"><i class='bx ${m.icon}'></i></div>
-                        <h3 style="font-size:15px; margin:0; color:#fff;">${m.ad}</h3>
+            ${modules.map(m => {
+                const isPurchased = mockData.installedUygulamalar.includes(m.ad);
+                return `
+                    <div class="glass-panel" style="padding:24px; display:flex; flex-direction:column; justify-content:space-between; gap:16px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="width:48px; height:48px; border-radius:12px; background:rgba(236,72,153,0.1); color:var(--secondary); font-size:24px; display:flex; align-items:center; justify-content:center;"><i class='bx ${m.icon}'></i></div>
+                            <h3 style="font-size:15px; margin:0; color:#fff;">${m.ad}</h3>
+                        </div>
+                        <p style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin:0; flex:1;">${m.desc}</p>
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-light); padding-top:12px; margin-top:10px;">
+                            <span style="font-size:13px; font-weight:700; color:var(--secondary);">${m.fiyat}</span>
+                            ${isPurchased ? 
+                                `<button class="btn btn-sm" style="background:rgba(255,255,255,0.05); color:#fff; border:1px solid var(--border-light);" onclick="uninstallApplication('${m.ad}', true)"><i class='bx bx-check-shield'></i> Aktif (Kaldır)</button>` :
+                                `<button class="btn btn-primary btn-sm" onclick="buyPremiumModule('${m.ad}', ${m.tutar})"><i class='bx bx-shopping-bag'></i> Satın Al</button>`
+                            }
+                        </div>
                     </div>
-                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin:0; flex:1;">${m.desc}</p>
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-light); padding-top:12px; margin-top:10px;">
-                        <span style="font-size:13px; font-weight:700; color:var(--secondary);">${m.fiyat}</span>
-                        <button class="btn btn-primary btn-sm" onclick="alert('${m.ad} modülü başarıyla satın alındı ve hesabınıza tanımlandı!')"><i class='bx bx-shopping-bag'></i> Satın Al</button>
-                    </div>
-                </div>
-            `).join('')}
+                `;
+            }).join('')}
         </div>
     `;
+}
+
+function uninstallApplication(name, isModule = false) {
+    mockData.installedUygulamalar = mockData.installedUygulamalar.filter(n => n !== name);
+    saveData();
+    alert(name + " modülü/eklentisi sistemden kaldırıldı.");
+    if (isModule) {
+        renderPazaryeri(document.getElementById('contentArea'));
+    } else {
+        renderUygulamalar(document.getElementById('contentArea'));
+    }
 }
 
 function renderAyarlarEtiketler(container) {
