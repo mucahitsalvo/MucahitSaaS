@@ -609,6 +609,16 @@ function renderPlaceholderPage(container, title, description, icon) {
 
 function renderAsistan(container) {
     container.innerHTML = `
+        <style>
+            @keyframes slideInRight {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes slideInLeft {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style>
         <div class="page-header fade-in">
             <div>
                 <h1 style="margin-bottom:5px;">MücahitSaaS Asistan</h1>
@@ -616,48 +626,55 @@ function renderAsistan(container) {
             </div>
         </div>
         
-        <div style="max-width: 600px; margin: 40px auto; text-align: center; display: flex; flex-direction: column; gap: 20px; align-items: center;" class="fade-in">
-            <div style="font-size: 50px; color: var(--primary);"><i class='bx bx-sparkles'></i></div>
-            <h2 style="color: #fff; font-size: 24px; font-weight: 700;">MücahitSaaS Asistan</h2>
-            <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
-                Size nasıl yardımcı olabilirim? Aşağıdaki sorulardan bir seçim yapabilirsiniz.
-            </p>
-            
-            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 10px;">
-                <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('ciro')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+        <div style="max-width: 700px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px;" class="fade-in">
+            <!-- Welcome Card -->
+            <div id="asistanWelcomeCard" style="text-align: center; padding: 30px 10px; background: rgba(255,255,255,0.01); border: 1px solid var(--border-light); border-radius: 16px;">
+                <div style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"><i class='bx bx-sparkles'></i></div>
+                <h2 style="color: #fff; font-size: 22px; font-weight: 700; margin-bottom: 10px;">MücahitSaaS Asistan</h2>
+                <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                    Size nasıl yardımcı olabilirim? Aşağıdaki sorulardan bir seçim yapabilirsiniz.
+                </p>
+            </div>
+
+            <!-- Chat History Area -->
+            <div id="asistanChatArea" style="display: none; flex-direction: column; gap: 20px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-light); border-radius: 16px; padding: 24px; max-height: 480px; overflow-y: auto; box-shadow: inset 0 4px 12px rgba(0,0,0,0.5);">
+            </div>
+
+            <!-- Question Selector (Options) -->
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;" id="asistanQuestionContainer">
+                <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('ciro', 'Bu ayki cirom nedir?')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
                     <i class='bx bx-trending-up' style='color:var(--primary)'></i> Bu ayki cirom nedir?
                 </button>
-                <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('kar')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+                <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('kar', 'Bu ay toplam kârım nedir?')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
                     <i class='bx bx-pie-chart-alt-2' style='color:var(--primary)'></i> Bu ay toplam kârım nedir?
                 </button>
-                <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('tahsilat')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+                <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('tahsilat', 'Bu ay ne kadar tahsilat yaptım?')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
                     <i class='bx bx-wallet' style='color:var(--primary)'></i> Bu ay ne kadar tahsilat yaptım?
                 </button>
-                <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('giris')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+                <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('giris', 'Bu ayki toplam kasa ve banka girişim nedir?')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
                     <i class='bx bx-credit-card' style='color:var(--primary)'></i> Bu ayki toplam kasa ve banka girişim nedir?
                 </button>
-                <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('musteri')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+                <button class="btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 10px; transition: 0.2s;" onclick="askAsistan('musteri', 'Bu ay kaç tekil müşteri alışveriş yaptı?')" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
                     <i class='bx bx-group' style='color:var(--primary)'></i> Bu ay kaç tekil müşteri alışveriş yaptı?
                 </button>
             </div>
             
-            <div id="asistanResult" style="display: none; width: 100%; margin-top: 15px; padding: 18px; border-radius: 12px; background: rgba(99,102,241,0.05); border: 1px solid rgba(99,102,241,0.15); text-align: left; line-height: 1.5; color: #fff;" class="fade-in">
-                <!-- Response will appear here -->
-            </div>
-            
-            <span style="font-size: 11px; color: var(--text-secondary); margin-top: 10px;">
+            <span style="font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 10px;">
                 MücahitSaaS asistan deneysel bir üründür, lütfen sonuçları doğrulayın.
             </span>
         </div>
     `;
 }
 
-function askAsistan(topic) {
-    const resultDiv = document.getElementById('asistanResult');
-    if (!resultDiv) return;
-    
-    let responseText = '';
-    
+function askAsistan(topic, questionText) {
+    const chatArea = document.getElementById('asistanChatArea');
+    const welcomeCard = document.getElementById('asistanWelcomeCard');
+    if (!chatArea) return;
+
+    // Transition elements once first question is answered
+    if (welcomeCard) welcomeCard.style.display = 'none';
+    chatArea.style.display = 'flex';
+
     // Simple calculations based on mockData
     let totalGelir = 0;
     let totalGider = 0;
@@ -678,22 +695,45 @@ function askAsistan(topic) {
     });
 
     let totalKasaInput = mockData.kasalar.reduce((a, b) => a + (parseFloat(b.bakiye) || 0), 0);
+    let responseText = '';
 
     if (topic === 'ciro') {
-        responseText = `🤖 <strong>MücahitSaaS Asistan:</strong> Bu ayki toplam cironuz (satış faturalarınızın genel toplamı) <strong>\${formatMoney(totalGelir)}</strong> olarak hesaplanmıştır.`;
+        responseText = `Bu ayki toplam cironuz (satış faturalarınızın genel toplamı) <strong>${formatMoney(totalGelir)}</strong> olarak hesaplanmıştır.`;
     } else if (topic === 'kar') {
         const netKar = totalGelir - totalGider;
-        responseText = `🤖 <strong>MücahitSaaS Asistan:</strong> Bu ayki net kârınız (Gelir: \${formatMoney(totalGelir)} - Gider: \${formatMoney(totalGider)}) <strong>\${formatMoney(netKar)}</strong> olarak hesaplanmıştır.`;
+        responseText = `Bu ayki net kârınız (Gelir: ${formatMoney(totalGelir)} - Gider: ${formatMoney(totalGider)}) <strong>${formatMoney(netKar)}</strong> olarak hesaplanmıştır.`;
     } else if (topic === 'tahsilat') {
-        responseText = `🤖 <strong>MücahitSaaS Asistan:</strong> Bu ay henüz tahsil edilmemiş (bekleyen) toplam fatura tutarınız <strong>\${formatMoney(totalTahsilat)}</strong> olarak görünmektedir.`;
+        responseText = `Bu ay henüz tahsil edilmemiş (bekleyen) toplam fatura tutarınız <strong>${formatMoney(totalTahsilat)}</strong> olarak görünmektedir.`;
     } else if (topic === 'giris') {
-        responseText = `🤖 <strong>MücahitSaaS Asistan:</strong> Kasa ve banka hesaplarınızda bulunan güncel toplam mevduat/bakiye <strong>\${formatMoney(totalKasaInput)}</strong> olarak hesaplanmıştır.`;
+        responseText = `Kasa ve banka hesaplarınızda bulunan güncel toplam mevduat/bakiye <strong>${formatMoney(totalKasaInput)}</strong> olarak hesaplanmıştır.`;
     } else if (topic === 'musteri') {
-        responseText = `🤖 <strong>MücahitSaaS Asistan:</strong> Bu ay fatura kesilmiş toplam <strong>\${uniqueCustomers.size} adet tekil müşteri</strong> alışveriş yapmıştır.`;
+        responseText = `Bu ay fatura kesilmiş toplam <strong>${uniqueCustomers.size} adet tekil müşteri</strong> alışveriş yapmıştır.`;
     }
     
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = responseText;
+    // Create user query bubble
+    const userBubble = `
+        <div style="align-self: flex-end; background: var(--primary); color: #fff; padding: 12px 18px; border-radius: 16px 16px 0 16px; max-width: 80%; box-shadow: 0 4px 10px rgba(0,0,0,0.15); animation: slideInRight 0.25s ease;">
+            ${questionText}
+        </div>
+    `;
+
+    // Create assistant response bubble
+    const asistanBubble = `
+        <div style="align-self: flex-start; background: rgba(255,255,255,0.04); border: 1px solid var(--border-light); color: #fff; padding: 14px 18px; border-radius: 16px 16px 16px 0; max-width: 80%; display: flex; gap: 12px; align-items: flex-start; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: slideInLeft 0.25s ease;">
+            <div style="font-size: 24px; color: var(--primary); flex-shrink: 0; margin-top: 2px;"><i class='bx bx-bot'></i></div>
+            <div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">MücahitSaaS Asistan</div>
+                <div style="font-size: 14px; line-height: 1.5; color: #fff;">${responseText}</div>
+            </div>
+        </div>
+    `;
+
+    chatArea.innerHTML += userBubble + asistanBubble;
+    
+    // Auto-scroll chat area to bottom
+    setTimeout(() => {
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }, 50);
 }
 
 function renderDashboard(container) {
