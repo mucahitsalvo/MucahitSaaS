@@ -17,7 +17,15 @@ function initUserData() {
     const isDemo = (email === 'demo@kullanici.com' || !localStorage.getItem('session_expiry'));
     
     const localData = localStorage.getItem(`saas_erp_data_${email}`) || localStorage.getItem('saas_erp_data');
-    mockData = localData ? JSON.parse(localData) : {
+    let parsed = null;
+    if (localData) {
+        try {
+            parsed = JSON.parse(localData);
+        } catch (e) {
+            console.error("Local data parsing failed, fallback to defaults:", e);
+        }
+    }
+    mockData = parsed ? parsed : {
         cariler: [],
         urunler: [],
         faturalar: [],
@@ -275,6 +283,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedEmail = localStorage.getItem('user_email') || 'demo@kullanici.com';
     const emailEl = document.getElementById('sidebarUserEmail');
     if(emailEl) emailEl.innerText = savedEmail;
+    
+    const avatarEl = document.getElementById('sidebarUserAvatar');
+    if(avatarEl) {
+        // Dynamic clean initials name representation
+        const initials = savedEmail.split('@')[0].toUpperCase();
+        avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=6366f1&color=fff`;
+    }
     
     if (typeof renderNotifications === 'function') renderNotifications();
 
