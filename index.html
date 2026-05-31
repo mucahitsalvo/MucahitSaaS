@@ -92,6 +92,9 @@
 
     <!-- MAIN APP -->
     <div class="app-container" id="appContainer" style="display: none;">
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileMenu()"></div>
+        
         <!-- Sidebar -->
         <aside class="sidebar glass-panel-dark" id="sidebarMenu">
             <div class="logo" id="sidebarLogo">
@@ -233,6 +236,10 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="topbar glass-panel-dark">
+                <!-- Mobile Menu Toggle -->
+                <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu(event)">
+                    <i class='bx bx-menu'></i>
+                </button>
                 <div class="search-bar">
                     <i class='bx bx-search'></i>
                     <input type="text" placeholder="Uygulama içinde arayın...">

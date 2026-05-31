@@ -506,6 +506,9 @@ function loadPage(page) {
     if (!page) return;
     CURRENT_PAGE = page;
     
+    // Close mobile side menu if open
+    if (typeof closeMobileMenu === 'function') closeMobileMenu();
+    
     // Close any active mobile/collapsed popups
     document.querySelectorAll('.has-submenu').forEach(p => {
         p.classList.remove('active-popup');
@@ -4794,6 +4797,28 @@ function toggleSidebar(e) {
     }
 }
 
+function toggleMobileMenu(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    const sidebar = document.getElementById('sidebarMenu');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('open-mobile');
+        overlay.classList.toggle('active');
+    }
+}
+
+function closeMobileMenu() {
+    const sidebar = document.getElementById('sidebarMenu');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar && overlay) {
+        sidebar.classList.remove('open-mobile');
+        overlay.classList.remove('active');
+    }
+}
+
 function toggleSubmenu(e, submenuId) {
     if (e) e.preventDefault();
     
@@ -4802,7 +4827,7 @@ function toggleSubmenu(e, submenuId) {
     if (!submenu) return;
     const parentItem = submenu.parentElement;
 
-    const isCollapsed = (sidebar && sidebar.classList.contains('collapsed')) || window.innerWidth <= 768;
+    const isCollapsed = (sidebar && sidebar.classList.contains('collapsed')) && window.innerWidth > 768;
 
     if (isCollapsed) {
         // Collapsed or mobile popup view
