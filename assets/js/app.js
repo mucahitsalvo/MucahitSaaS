@@ -16,7 +16,7 @@ function initUserData() {
     const email = localStorage.getItem('user_email') || 'demo@kullanici.com';
     const isDemo = (email === 'demo@kullanici.com' || !localStorage.getItem('session_expiry'));
     
-    const localData = localStorage.getItem(`saas_erp_data_${email}`) || localStorage.getItem('saas_erp_data');
+    const localData = localStorage.getItem(`saas_erp_data_${email}`) || (email === 'demo@kullanici.com' ? localStorage.getItem('saas_erp_data') : null);
     let parsed = null;
     if (localData) {
         try {
@@ -240,7 +240,9 @@ initUserData();
 function saveData() {
     const email = localStorage.getItem('user_email') || 'demo@kullanici.com';
     localStorage.setItem(`saas_erp_data_${email}`, JSON.stringify(mockData));
-    localStorage.setItem('saas_erp_data', JSON.stringify(mockData));
+    if (email === 'demo@kullanici.com') {
+        localStorage.setItem('saas_erp_data', JSON.stringify(mockData));
+    }
     loadPage(CURRENT_PAGE); // Refresh current page
 }
 
@@ -2193,7 +2195,11 @@ async function syncFromSupabase() {
 
         if (anyLoaded) {
             mockData = loadedData;
-            localStorage.setItem('saas_erp_data', JSON.stringify(mockData));
+            const userEmail = user.email || 'demo@kullanici.com';
+            localStorage.setItem(`saas_erp_data_${userEmail}`, JSON.stringify(mockData));
+            if (userEmail === 'demo@kullanici.com') {
+                localStorage.setItem('saas_erp_data', JSON.stringify(mockData));
+            }
         }
     } catch (e) {
         console.warn("Supabase sync failed, using localStorage cache:", e);
