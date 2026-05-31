@@ -2282,69 +2282,100 @@ async function dbDeleteItem(type, item) {
 }
 
 // --- CURRENCY CONVERTER & TICKER ---
-let exchangeRates = { USD: 32.50, EUR: 35.20, GBP: 41.10 };
-let prevExchangeRates = { USD: 32.50, EUR: 35.20, GBP: 41.10 };
+let exchangeRates = { USD: 32.5000, EUR: 35.2000, GBP: 41.1000 };
+let prevExchangeRates = { USD: 32.5000, EUR: 35.2000, GBP: 41.1000 };
 let liveCurrencyInterval = null;
+let lastRatesUpdate = new Date();
 
 async function fetchExchangeRates() {
+    // 1. Try to load cached rates from localStorage for trend comparison
+    const cached = localStorage.getItem('cached_exchange_rates');
+    if (cached) {
+        try {
+            const parsed = JSON.parse(cached);
+            if (parsed && parsed.USD && parsed.EUR && parsed.GBP) {
+                prevExchangeRates.USD = parsed.USD;
+                prevExchangeRates.EUR = parsed.EUR;
+                prevExchangeRates.GBP = parsed.GBP;
+                
+                // Set fallback to cached rates in case fetch fails
+                exchangeRates.USD = parsed.USD;
+                exchangeRates.EUR = parsed.EUR;
+                exchangeRates.GBP = parsed.GBP;
+            }
+        } catch (err) {
+            console.warn("Cached exchange rates parse failed:", err);
+        }
+    }
+
+    // 2. Fetch fresh rates from the public API
     try {
         const res = await fetch('https://open.er-api.com/v6/latest/USD');
         const data = await res.json();
         if (data && data.rates && data.rates.TRY) {
             const tryRate = data.rates.TRY;
-            exchangeRates.USD = parseFloat((tryRate).toFixed(2));
-            exchangeRates.EUR = parseFloat((tryRate / data.rates.EUR).toFixed(2));
-            exchangeRates.GBP = parseFloat((tryRate / data.rates.GBP).toFixed(2));
             
-            // Sync previous rates to match
-            prevExchangeRates.USD = exchangeRates.USD;
-            prevExchangeRates.EUR = exchangeRates.EUR;
-            prevExchangeRates.GBP = exchangeRates.GBP;
+            // Set rates with high-precision 4 decimals
+            exchangeRates.USD = parseFloat(tryRate.toFixed(4));
+            exchangeRates.EUR = parseFloat((tryRate / data.rates.EUR).toFixed(4));
+            exchangeRates.GBP = parseFloat((tryRate / data.rates.GBP).toFixed(4));
             
-            console.log("Live rates loaded:", exchangeRates);
+            lastRatesUpdate = new Date();
+            
+            // Save new rates for next comparison
+            localStorage.setItem('cached_exchange_rates', JSON.stringify(exchangeRates));
+            localStorage.setItem('cached_exchange_rates_time', lastRatesUpdate.getTime().toString());
+            
+            console.log("Live real-world exchange rates updated:", exchangeRates);
         }
     } catch (e) {
-        console.warn("Currency exchange rates fetch failed, using fallbacks.", e);
+        console.warn("Live currency rates fetch failed, using cache/fallbacks.", e);
     }
-    // Start the live ticker band updater simulation
-    startLiveCurrencySimulation();
-}
-
-function startLiveCurrencySimulation() {
-    if (liveCurrencyInterval) clearInterval(liveCurrencyInterval);
     
-    liveCurrencyInterval = setInterval(() => {
-        const tickerEl = document.getElementById('liveTickerBand');
-        
-        // Capture previous values
-        prevExchangeRates.USD = exchangeRates.USD;
-        prevExchangeRates.EUR = exchangeRates.EUR;
-        prevExchangeRates.GBP = exchangeRates.GBP;
-        
-        // Random micro fluctuations (+/- 0.01 to 0.03 TRY)
-        const diffUSD = (Math.random() - 0.5) * 0.04;
-        const diffEUR = (Math.random() - 0.5) * 0.04;
-        const diffGBP = (Math.random() - 0.5) * 0.05;
-        
-        exchangeRates.USD = parseFloat((exchangeRates.USD + diffUSD).toFixed(2));
-        exchangeRates.EUR = parseFloat((exchangeRates.EUR + diffEUR).toFixed(2));
-        exchangeRates.GBP = parseFloat((exchangeRates.GBP + diffGBP).toFixed(2));
-        
-        if (tickerEl) {
-            tickerEl.innerHTML = renderTickerItemsOnly();
-        }
-    }, 5000);
+    // 3. Update the ticker band if it exists in the DOM
+    const tickerEl = document.getElementById('liveTickerBand');
+    if (tickerEl) {
+        tickerEl.innerHTML = renderTickerItemsOnly();
+    }
+    
+    // 4. Update the converter elements if they are on screen
+    const lastUpdateEl = document.getElementById('converterLastUpdate');
+    if (lastUpdateEl) {
+        lastUpdateEl.innerText = lastRatesUpdate.toLocaleTimeString();
+    }
+    const summaryUSDEl = document.getElementById('summaryUSD');
+    if (summaryUSDEl) summaryUSDEl.innerText = exchangeRates.USD.toFixed(4) + ' ₺';
+    const summaryEUREl = document.getElementById('summaryEUR');
+    if (summaryEUREl) summaryEUREl.innerText = exchangeRates.EUR.toFixed(4) + ' ₺';
+    const summaryGBPEl = document.getElementById('summaryGBP');
+    if (summaryGBPEl) summaryGBPEl.innerText = exchangeRates.GBP.toFixed(4) + ' ₺';
+    
+    // Recalculate active conversion
+    if (typeof calculateLiveConversion === 'function') {
+        calculateLiveConversion();
+    }
+    
+    // 5. Setup periodic background fetch (every 10 minutes)
+    if (!liveCurrencyInterval) {
+        liveCurrencyInterval = setInterval(fetchExchangeRates, 600000);
+    }
 }
 
 function getTickerItemHTML(label, val, prevVal) {
-    const isUp = val >= prevVal;
-    const arrow = isUp ? `<i class='bx bxs-up-arrow'></i>` : `<i class='bx bxs-down-arrow'></i>`;
-    const trendClass = isUp ? 'ticker-up' : 'ticker-down';
+    let arrow = `<i class='bx bxs-up-arrow'></i>`;
+    let trendClass = 'ticker-up';
+    if (val < prevVal) {
+        arrow = `<i class='bx bxs-down-arrow'></i>`;
+        trendClass = 'ticker-down';
+    } else if (val === prevVal) {
+        arrow = `<i class='bx bx-minus'></i>`;
+        trendClass = 'ticker-neutral';
+    }
     return `
         <div class="ticker-item">
             <span>${label}</span>
-            <span class="ticker-val">${val.toFixed(2)} ₺</span>
-            <span class="${trendClass}">${arrow}</span>
+            <span class="ticker-val">${val.toFixed(4)} ₺</span>
+            <span class="${trendClass}" style="${val === prevVal ? 'color: var(--text-secondary)' : ''}">${arrow}</span>
         </div>
     `;
 }
@@ -2357,6 +2388,9 @@ function renderTickerItemsOnly() {
         ${getTickerItemHTML('USD/TRY', exchangeRates.USD, prevExchangeRates.USD)}
         ${getTickerItemHTML('EUR/TRY', exchangeRates.EUR, prevExchangeRates.EUR)}
         ${getTickerItemHTML('GBP/TRY', exchangeRates.GBP, prevExchangeRates.GBP)}
+        <button onclick="fetchExchangeRates(); this.blur();" class="ticker-refresh-btn" title="Kurları Yenile" style="margin-left: auto;">
+            <i class='bx bx-refresh'></i>
+        </button>
     `;
 }
 
@@ -2440,7 +2474,125 @@ function renderKasalar(container) {
                 </tbody>
             </table>
         </div>
+
+        <!-- CANLI DÖVİZ ÇEVİRİCİ -->
+        <div class="glass-panel converter-card fade-in" style="animation-delay: 0.3s; margin-top: 25px;">
+            <div class="converter-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class='bx bx-calculator' style="font-size: 24px; color: var(--primary);"></i>
+                    <h3>Canlı Döviz Çevirici</h3>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); display:flex; align-items:center; gap:5px;">
+                    <i class='bx bx-time'></i> Son Güncelleme: <span id="converterLastUpdate">${lastRatesUpdate.toLocaleTimeString()}</span>
+                </div>
+            </div>
+            
+            <div class="converter-grid">
+                <div class="converter-field">
+                    <label for="convAmount">Miktar</label>
+                    <input type="number" id="convAmount" class="converter-input" value="100" min="0" step="any" oninput="calculateLiveConversion()">
+                </div>
+                
+                <div class="converter-field">
+                    <label for="convFrom">Kaynak Para Birimi</label>
+                    <select id="convFrom" class="converter-input converter-select" onchange="calculateLiveConversion()">
+                        <option value="TRY">TRY - Türk Lirası</option>
+                        <option value="USD" selected>USD - Amerikan Doları</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="GBP">GBP - İngiliz Sterlini</option>
+                    </select>
+                </div>
+                
+                <div class="converter-field" style="display:flex; justify-content:center; align-items:center; width:40px; margin:0 auto; padding-bottom:12px;">
+                    <button class="btn btn-sm" onclick="swapConverterCurrencies()" style="background:rgba(255,255,255,0.05); border:1px solid var(--border-light); border-radius:50%; width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; color:var(--text-primary);" title="Para Birimlerini Değiştir">
+                        <i class='bx bx-transfer-alt' style="transform: rotate(90deg); font-size:18px;"></i>
+                    </button>
+                </div>
+                
+                <div class="converter-field">
+                    <label for="convTo">Hedef Para Birimi</label>
+                    <select id="convTo" class="converter-input converter-select" onchange="calculateLiveConversion()">
+                        <option value="TRY" selected>TRY - Türk Lirası</option>
+                        <option value="USD">USD - Amerikan Doları</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="GBP">GBP - İngiliz Sterlini</option>
+                    </select>
+                </div>
+                
+                <div class="converter-result-box">
+                    <div id="convResultVal" class="converter-result-val">0.00 TRY</div>
+                    <div id="convResultRate" class="converter-result-rate">1 USD = 0.0000 TRY</div>
+                </div>
+            </div>
+            
+            <div class="converter-rates-summary">
+                <div class="rate-badge">
+                    <i class='bx bx-money' style="color:var(--primary);"></i>
+                    USD/TRY: <span id="summaryUSD">${exchangeRates.USD.toFixed(4)} ₺</span>
+                </div>
+                <div class="rate-badge">
+                    <i class='bx bx-euro' style="color:var(--success);"></i>
+                    EUR/TRY: <span id="summaryEUR">${exchangeRates.EUR.toFixed(4)} ₺</span>
+                </div>
+                <div class="rate-badge">
+                    <i class='bx bx-pound' style="color:var(--warning);"></i>
+                    GBP/TRY: <span id="summaryGBP">${exchangeRates.GBP.toFixed(4)} ₺</span>
+                </div>
+            </div>
+        </div>
     `;
+
+    setTimeout(() => {
+        if (typeof calculateLiveConversion === 'function') {
+            calculateLiveConversion();
+        }
+    }, 50);
+}
+
+function swapConverterCurrencies() {
+    const fromEl = document.getElementById('convFrom');
+    const toEl = document.getElementById('convTo');
+    if (fromEl && toEl) {
+        const temp = fromEl.value;
+        fromEl.value = toEl.value;
+        toEl.value = temp;
+        calculateLiveConversion();
+    }
+}
+
+function calculateLiveConversion() {
+    const amountEl = document.getElementById('convAmount');
+    const fromEl = document.getElementById('convFrom');
+    const toEl = document.getElementById('convTo');
+    const resultValEl = document.getElementById('convResultVal');
+    const resultRateEl = document.getElementById('convResultRate');
+    
+    if (!amountEl || !fromEl || !toEl || !resultValEl || !resultRateEl) return;
+    
+    const amount = parseFloat(amountEl.value) || 0;
+    const fromCur = fromEl.value;
+    const toCur = toEl.value;
+    
+    let rateFromTRY = 1;
+    if (fromCur === 'USD') rateFromTRY = exchangeRates.USD;
+    else if (fromCur === 'EUR') rateFromTRY = exchangeRates.EUR;
+    else if (fromCur === 'GBP') rateFromTRY = exchangeRates.GBP;
+    
+    let rateToTRY = 1;
+    if (toCur === 'USD') rateToTRY = exchangeRates.USD;
+    else if (toCur === 'EUR') rateToTRY = exchangeRates.EUR;
+    else if (toCur === 'GBP') rateToTRY = exchangeRates.GBP;
+    
+    const conversionRate = rateFromTRY / rateToTRY;
+    const result = amount * conversionRate;
+    
+    resultValEl.innerHTML = `${formatMoneyWithCurrency(result, toCur)}`;
+    resultRateEl.innerHTML = `1 ${fromCur} = ${conversionRate.toFixed(4)} ${toCur}`;
+}
+
+function formatMoneyWithCurrency(amount, currency) {
+    if (currency === 'TRY') return `${formatMoney(amount)}`;
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount);
 }
 
 // --- ÇEK & SENET TAKİBİ MODULE ---
