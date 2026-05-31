@@ -1779,11 +1779,36 @@ function applyBranding() {
     // Update Sidebar Logo
     const logoEl = document.getElementById('sidebarLogo');
     if (logoEl) {
-        if (appName.toLowerCase().endsWith('saas')) {
-            const base = appName.substring(0, appName.length - 4);
-            logoEl.innerHTML = `<i class='bx bx-cube-alt'></i><span>${base}<span class="pro">SaaS</span></span>`;
+        // Find if close button exists in the element, if so, keep it
+        const closeBtn = logoEl.querySelector('#mobileCloseBtn');
+        let closeBtnHTML = '';
+        if (closeBtn) {
+            closeBtnHTML = closeBtn.outerHTML;
         } else {
-            logoEl.innerHTML = `<i class='bx bx-cube-alt'></i><span>${appName}</span>`;
+            closeBtnHTML = `<button class="mobile-close-btn" id="mobileCloseBtn" onclick="closeMobileMenu()" style="background: transparent; border: none; font-size: 24px; cursor: pointer; display: none; align-items: center; justify-content: center;"><i class='bx bx-x' style="color: var(--text-primary);"></i></button>`;
+        }
+
+        if (appName === 'MücahitSaaS') {
+            logoEl.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <span style="color: var(--text-primary); font-weight: 800; font-size: 26px; font-family: var(--font-heading);">M<span style="color: #a855f7;">S</span></span>
+                </div>
+                ${closeBtnHTML}
+            `;
+        } else {
+            let logoTextHTML = '';
+            if (appName.toLowerCase().endsWith('saas')) {
+                const base = appName.substring(0, appName.length - 4);
+                logoTextHTML = `<span style="color: var(--text-primary); font-weight: 800; font-size: 26px; font-family: var(--font-heading);">${base}<span style="color: #a855f7;">SaaS</span></span>`;
+            } else {
+                logoTextHTML = `<span style="color: var(--text-primary); font-weight: 800; font-size: 26px; font-family: var(--font-heading);">${appName}</span>`;
+            }
+            logoEl.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    ${logoTextHTML}
+                </div>
+                ${closeBtnHTML}
+            `;
         }
     }
 }
