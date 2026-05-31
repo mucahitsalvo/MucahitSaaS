@@ -14,7 +14,7 @@ let mockData = {
 
 function initUserData() {
     const email = localStorage.getItem('user_email') || 'demo@kullanici.com';
-    const isDemo = (email === 'demo@kullanici.com' || !localStorage.getItem('session_expiry'));
+    const isDemo = (email === 'demo@kullanici.com');
     
     const localData = localStorage.getItem(`saas_erp_data_${email}`) || (email === 'demo@kullanici.com' ? localStorage.getItem('saas_erp_data') : null);
     let parsed = null;
@@ -81,6 +81,45 @@ function initUserData() {
     if (!mockData.kullanicilar) mockData.kullanicilar = [];
     if (!mockData.etiketler) mockData.etiketler = [];
     if (!mockData.sablonlar || typeof mockData.sablonlar !== 'object') mockData.sablonlar = {};
+
+    // Self-healing database cleanup for real user accounts:
+    // If the account belongs to a real user (NOT demo) but somehow inherited the mock demo data,
+    // we clear it to a completely empty state.
+    if (!isDemo) {
+        const hasDemoCari = mockData.cariler.some(c => c.unvan === "Ahmet Yılmaz İnşaat" || c.unvan === "Doruk Lojistik A.Ş.");
+        const hasDemoFatura = mockData.faturalar.some(f => f.cari === "Ahmet Yılmaz İnşaat");
+        if (hasDemoCari || hasDemoFatura) {
+            mockData = {
+                cariler: [],
+                urunler: [],
+                faturalar: [],
+                takvimNotlari: {},
+                tickets: [],
+                kasalar: [],
+                cekSenetler: [],
+                personeller: [],
+                maasOdemeleri: [],
+                teklifler: [],
+                giderler: [],
+                gelenEFaturalar: [],
+                depolar: [],
+                depoTransferleri: [],
+                gidenIrsaliyeler: [],
+                gelenIrsaliyeler: [],
+                fiyatListeleri: [],
+                stokGecmisi: [],
+                eticaretSiparisler: [],
+                eticaretEntegrasyonlar: [],
+                eticaretEslesmeler: [],
+                eticaretAyarlar: {},
+                installedUygulamalar: [],
+                kullanicilar: [],
+                etiketler: [],
+                sablonlar: {}
+            };
+            localStorage.setItem(`saas_erp_data_${email}`, JSON.stringify(mockData));
+        }
+    }
 
     // Check and add default bank/safe box accounts
     if (mockData.kasalar.length === 0) {
