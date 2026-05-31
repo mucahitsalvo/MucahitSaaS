@@ -850,7 +850,7 @@ function renderDashboard(container) {
             <div class="glass-panel" style="margin-top:24px; padding:24px; border:1px solid rgba(139,92,246,0.3); background: linear-gradient(135deg, rgba(139,92,246,0.05), rgba(99,102,241,0.05)); animation: fadeIn 0.4s ease;">
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
                     <div style="font-size:24px; color:#8b5cf6;"><i class='bx bx-sparkles'></i></div>
-                    <h3 style="font-size:16px; color:#fff; margin:0; font-weight:600;">Yapay Zeka Nakit Akışı Öngörüsü (AI)</h3>
+                    <h3 style="font-size:16px; color:var(--text-primary); margin:0; font-weight:600;">Yapay Zeka Nakit Akışı Öngörüsü (AI)</h3>
                 </div>
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
                     <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-light); padding:15px; border-radius:12px;">
@@ -938,7 +938,7 @@ function renderDashboard(container) {
                 <div style="position:relative; flex:1; min-height:0; display:flex; align-items:center; justify-content:center;">
                     <canvas id="pieChart"></canvas>
                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -60%); text-align: center; pointer-events: none; display:flex; flex-direction:column; gap:2px;">
-                        <span style="font-size: 20px; font-weight: 800; color: #fff;" id="pieChartCenterVal">0.00 ₺</span>
+                        <span style="font-size: 20px; font-weight: 800; color: var(--text-primary);" id="pieChartCenterVal">0.00 ₺</span>
                         <span style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Toplam Bakiye</span>
                     </div>
                 </div>
@@ -949,7 +949,7 @@ function renderDashboard(container) {
                 <div style="position:relative; flex:1; min-height:0; display:flex; align-items:center; justify-content:center;">
                     <canvas id="categoryChart"></canvas>
                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -60%); text-align: center; pointer-events: none; display:flex; flex-direction:column; gap:2px;">
-                        <span style="font-size: 20px; font-weight: 800; color: #fff;" id="categoryChartCenterVal">0.00 ₺</span>
+                        <span style="font-size: 20px; font-weight: 800; color: var(--text-primary);" id="categoryChartCenterVal">0.00 ₺</span>
                         <span style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Toplam Gider</span>
                     </div>
                 </div>
@@ -4805,8 +4805,13 @@ function toggleMobileMenu(e) {
     const sidebar = document.getElementById('sidebarMenu');
     const overlay = document.getElementById('sidebarOverlay');
     if (sidebar && overlay) {
-        sidebar.classList.toggle('open-mobile');
+        const isOpen = sidebar.classList.toggle('open-mobile');
         overlay.classList.toggle('active');
+        if (isOpen) {
+            document.body.classList.add('mobile-menu-active');
+        } else {
+            document.body.classList.remove('mobile-menu-active');
+        }
     }
 }
 
@@ -4816,6 +4821,7 @@ function closeMobileMenu() {
     if (sidebar && overlay) {
         sidebar.classList.remove('open-mobile');
         overlay.classList.remove('active');
+        document.body.classList.remove('mobile-menu-active');
     }
 }
 
