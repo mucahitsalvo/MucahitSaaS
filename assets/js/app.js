@@ -4284,6 +4284,7 @@ function deleteData(type, idx) {
 }
 
 function logout() {
+    localStorage.removeItem('session_expiry');
     document.getElementById('appContainer').style.display = 'none';
     document.getElementById('authScreen').style.display = 'flex';
     document.getElementById('authScreen').style.opacity = '1';
