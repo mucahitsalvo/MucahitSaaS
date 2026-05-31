@@ -121,155 +121,74 @@ function initUserData() {
         }
     }
 
-    // Check and add default bank/safe box accounts
+    // One-time database migration to remove all previously seeded mock data
+    if (!mockData.cleaned_v2) {
+        mockData = {
+            cariler: [],
+            urunler: [],
+            faturalar: [],
+            takvimNotlari: {},
+            tickets: [],
+            kasalar: [],
+            cekSenetler: [],
+            personeller: [],
+            maasOdemeleri: [],
+            teklifler: [],
+            giderler: [],
+            gelenEFaturalar: [],
+            depolar: [],
+            depoTransferleri: [],
+            gidenIrsaliyeler: [],
+            gelenIrsaliyeler: [],
+            fiyatListeleri: [],
+            stokGecmisi: [],
+            eticaretSiparisler: [],
+            eticaretEntegrasyonlar: [],
+            eticaretEslesmeler: [],
+            eticaretAyarlar: {},
+            installedUygulamalar: [],
+            kullanicilar: [],
+            etiketler: [],
+            sablonlar: {},
+            cleaned_v2: true
+        };
+        localStorage.setItem(`saas_erp_data_${email}`, JSON.stringify(mockData));
+        if (email === 'demo@kullanici.com') {
+            localStorage.setItem('saas_erp_data', JSON.stringify(mockData));
+        }
+    }
+
+    // Check and add default bank/safe box accounts with 0 balance
     if (mockData.kasalar.length === 0) {
         mockData.kasalar = [
             { ad: "Merkez TL Kasası", tur: "Kasa", bakiye: 0, para_birimi: "TRY" },
             { ad: "Garanti Bankası Ticari", tur: "Banka", bakiye: 0, para_birimi: "TRY" },
             { ad: "Dolar Kasası", tur: "Kasa", bakiye: 0, para_birimi: "USD" }
         ];
-        if (isDemo) {
-            mockData.kasalar[0].bakiye = 15000;
-            mockData.kasalar[1].bakiye = 85000;
-            mockData.kasalar[2].bakiye = 2500;
-        }
     }
-    
-    // Seed mock data ONLY in demo mode
-    if (isDemo) {
-        if (mockData.cekSenetler.length === 0) {
-            mockData.cekSenetler = [
-                { tutar: 25000, vade_tarihi: "2026-06-15", cari: "Ahmet Yılmaz İnşaat", tur: "Alınan", tip: "Çek", durum: "Portföyde" },
-                { tutar: 45000, vade_tarihi: "2026-05-28", cari: "Doruk Lojistik A.Ş.", tur: "Verilen", tip: "Çek", durum: "Portföyde" }
-            ];
-        }
-        if (mockData.personeller.length === 0) {
-            mockData.personeller = [
-                { isim: "Mücahit Salvo", departman: "Yönetim", unvan: "Genel Müdür", maas: 75000, giris_tarihi: "2024-01-10" },
-                { isim: "Elif Demir", departman: "Finans", unvan: "Muhasebe Uzmanı", maas: 45000, giris_tarihi: "2025-03-15" }
-            ];
-        }
-        if (mockData.teklifler.length === 0) {
-            mockData.teklifler = [
-                { teklif_no: "TKF-2026-001", cari: "Ahmet Yılmaz İnşaat", tutar: 12000, tarih: "24.05.2026", durum: "Onaylandı", kalemler: [{ urun: "Web Tasarım Hizmeti", miktar: 1, fiyat: 10000 }, { urun: "Barındırma Hizmeti", miktar: 1, fiyat: 2000 }] },
-                { teklif_no: "TKF-2026-002", cari: "Doruk Lojistik A.Ş.", tutar: 8500, tarih: "23.05.2026", durum: "Beklemede", kalemler: [{ urun: "SEO Danışmanlığı", miktar: 1, fiyat: 8500 }] }
-            ];
-        }
-        if (mockData.cariler.length === 0) {
-            mockData.cariler = [
-                { unvan: "Ahmet Yılmaz İnşaat", tur: "Müşteri", bakiye: 12000 },
-                { unvan: "Doruk Lojistik A.Ş.", tur: "Tedarikçi", bakiye: -8500 }
-            ];
-        }
-        if (mockData.urunler.length === 0) {
-            mockData.urunler = [
-                { kod: "SRV-01", ad: "Web Tasarım Hizmeti", fiyat: 10000, stok: 999 },
-                { kod: "SRV-02", ad: "Barındırma Hizmeti", fiyat: 2000, stok: 999 },
-                { kod: "SRV-03", ad: "SEO Danışmanlığı", fiyat: 8500, stok: 999 }
-            ];
-        }
-        if (mockData.faturalar.length === 0) {
-            mockData.faturalar = [
-                { tutar: 12000, kdv_orani: 20, kdv_tutari: 2400, genel_toplam: 14400, cari: "Ahmet Yılmaz İnşaat", tur: "Satış", tarih: "2026-05-24", durum: "Beklemede", kategori: "Hizmet Satışı", kalemler: [{ urun: "Web Tasarım Hizmeti", miktar: 1, fiyat: 10000 }, { urun: "Barındırma Hizmeti", miktar: 1, fiyat: 2000 }] },
-                { tutar: 8500, kdv_orani: 20, kdv_tutari: 1700, genel_toplam: 10200, cari: "Doruk Lojistik A.Ş.", tur: "Alış", tarih: "2026-05-23", durum: "Ödendi", kategori: "Lojistik Gideri", kalemler: [{ urun: "SEO Danışmanlığı", miktar: 1, fiyat: 8500 }] }
-            ];
-        }
-        if (mockData.giderler.length === 0) {
-            mockData.giderler = [
-                { tarih: "2026-05-10", kategori: "Kira", aciklama: "Merkez Ofis Mayıs Kira Bedeli", tutar: 20000, kasa: "Garanti Bankası Ticari", durum: "Ödendi" },
-                { tarih: "2026-05-15", kategori: "Fatura / Abonelik", aciklama: "İnternet ve Telefon Faturaları", tutar: 1500, kasa: "Merkez TL Kasası", durum: "Ödendi" },
-                { tarih: "2026-05-20", kategori: "Pazarlama / Reklam", aciklama: "Google Ads Reklam Ödemesi", tutar: 8000, kasa: "Garanti Bankası Ticari", durum: "Ödendi" },
-                { tarih: "2026-05-25", kategori: "Ofis Giderleri", aciklama: "Ofis Mutfak ve Kırtasiye Alışverişi", tutar: 3200, kasa: "Merkez TL Kasası", durum: "Ödendi" }
-            ];
-        }
-        if (mockData.gelenEFaturalar.length === 0) {
-            mockData.gelenEFaturalar = [
-                { fatura_no: "GFT-2026-0012", cari: "Turkcell İletişim A.Ş.", tutar: 1800, tarih: "2026-05-28", durum: "Beklemede", kategori: "Fatura / Abonelik" },
-                { fatura_no: "GFT-2026-0013", cari: "Elektrik Dağıtım A.Ş.", tutar: 4200, tarih: "2026-05-27", durum: "Beklemede", kategori: "Fatura / Abonelik" }
-            ];
-        }
-        if (mockData.depolar.length === 0) {
-            mockData.depolar = [
-                { ad: "Merkez Depo", konum: "İstanbul / Ümraniye", stok_adedi: 150, sorumlu: "Mücahit Salvo" },
-                { ad: "E-Ticaret Deposu", konum: "Kocaeli / Gebze", stok_adedi: 220, sorumlu: "Elif Demir" }
-            ];
-        }
-        if (mockData.depoTransferleri.length === 0) {
-            mockData.depoTransferleri = [
-                { tarih: "2026-05-18", urun: "Web Tasarım Hizmeti", miktar: 5, kaynak: "Merkez Depo", hedef: "E-Ticaret Deposu", durum: "Tamamlandı" },
-                { tarih: "2026-05-24", urun: "SEO Danışmanlığı", miktar: 2, kaynak: "Merkez Depo", hedef: "E-Ticaret Deposu", durum: "Sevk Edildi" }
-            ];
-        }
-        if (mockData.gidenIrsaliyeler.length === 0) {
-            mockData.gidenIrsaliyeler = [
-                { irsaliye_no: "IRS-2026-001", cari: "Ahmet Yılmaz İnşaat", tarih: "2026-05-22", urun: "Web Tasarım Hizmeti", miktar: 1, durum: "Faturalandırıldı" }
-            ];
-        }
-        if (mockData.gelenIrsaliyeler.length === 0) {
-            mockData.gelenIrsaliyeler = [
-                { irsaliye_no: "GIR-2026-001", cari: "Doruk Lojistik A.Ş.", tarih: "2026-05-23", urun: "SEO Danışmanlığı", miktar: 1, durum: "Sevk Edildi" }
-            ];
-        }
-        if (mockData.fiyatListeleri.length === 0) {
-            mockData.fiyatListeleri = [
-                { ad: "Genel Perakende Satış", indirim_orani: 0, baslangic: "2026-01-01", bitis: "2026-12-31", durum: "Aktif" },
-                { ad: "Bayi Özel Fiyat Listesi", indirim_orani: 15, baslangic: "2026-01-01", bitis: "2026-12-31", durum: "Aktif" }
-            ];
-        }
-        if (mockData.stokGecmisi.length === 0) {
-            mockData.stokGecmisi = [
-                { tarih: "2026-05-24", urun: "Web Tasarım Hizmeti", miktar: -1, tip: "Satış", aciklama: "TKF-2026-001 nolu teklif satışı" }
-            ];
-        }
-        if (mockData.eticaretSiparisler.length === 0) {
-            mockData.eticaretSiparisler = [
-                { siparis_no: "TY-87219-92", pazar_yeri: "Trendyol", cari: "Mehmet Kaya", tutar: 450, tarih: "2026-05-29", durum: "ERP'ye Aktarıldı" },
-                { siparis_no: "HB-12984-90", pazar_yeri: "Hepsiburada", cari: "Ayşe Yılmaz", tutar: 850, tarih: "2026-05-29", durum: "Beklemede" },
-                { siparis_no: "WC-5412", pazar_yeri: "WooCommerce", cari: "Ali Demir", tutar: 1200, tarih: "2026-05-30", durum: "Beklemede" }
-            ];
-        }
-        if (mockData.eticaretEntegrasyonlar.length === 0) {
-            mockData.eticaretEntegrasyonlar = [
-                { ad: "Trendyol Entegrasyonu", durum: false, satici_id: "", api_key: "", api_secret: "" },
-                { ad: "Hepsiburada Entegrasyonu", durum: false, satici_id: "", api_key: "", api_secret: "" },
-                { ad: "WooCommerce Entegrasyonu", durum: false, satici_id: "", api_key: "", api_secret: "" }
-            ];
-        }
-        if (mockData.eticaretEslesmeler.length === 0) {
-            mockData.eticaretEslesmeler = [
-                { e_ticaret_ad: "WordPress Premium Tema Entegrasyonu", erp_kod: "SRV-01", tarih: "2026-05-25", durum: "Eşleşti" }
-            ];
-        }
-        if (Object.keys(mockData.eticaretAyarlar).length === 0) {
-            mockData.eticaretAyarlar = {
-                depo: "E-Ticaret Deposu",
-                oto_fatura: false,
-                kargo_sablonu: "Yurtiçi Kargo Standart",
-                fatura_seri: "ETC"
-            };
-        }
-        if (mockData.installedUygulamalar.length === 0) {
-            mockData.installedUygulamalar = ["SMS Bildirim Modülü", "E-Fatura Entegrasyonu"];
-        }
-        if (mockData.kullanicilar.length === 0) {
-            mockData.kullanicilar = [
-                { isim: "Mücahit Salvo", eposta: "demo@kullanici.com", rol: "Yönetici" },
-                { isim: "Elif Demir", eposta: "elif.demir@firma.com", rol: "Muhasebe Uzmanı" }
-            ];
-        }
-        if (mockData.etiketler.length === 0) {
-            mockData.etiketler = [
-                { ad: "Yazılım Projeleri", renk: "#6366f1", tip: "Gelir" },
-                { ad: "Ofis Giderleri", renk: "#ef4444", tip: "Gider" },
-                { ad: "VIP Müşteri", renk: "#10b981", tip: "Cari" }
-            ];
-        }
-        if (Object.keys(mockData.sablonlar).length === 0) {
-            mockData.sablonlar = {
-                secili: "modern",
-                logo_durumu: true
-            };
-        }
+
+    if (mockData.eticaretEntegrasyonlar.length === 0) {
+        mockData.eticaretEntegrasyonlar = [
+            { ad: "Trendyol Entegrasyonu", durum: false, satici_id: "", api_key: "", api_secret: "" },
+            { ad: "Hepsiburada Entegrasyonu", durum: false, satici_id: "", api_key: "", api_secret: "" },
+            { ad: "WooCommerce Entegrasyonu", durum: false, satici_id: "", api_key: "", api_secret: "" }
+        ];
+    }
+
+    if (Object.keys(mockData.eticaretAyarlar).length === 0) {
+        mockData.eticaretAyarlar = {
+            depo: "Merkez Depo",
+            oto_fatura: false,
+            kargo_sablonu: "Yurtiçi Kargo Standart",
+            fatura_seri: "ETC"
+        };
+    }
+
+    if (Object.keys(mockData.sablonlar).length === 0) {
+        mockData.sablonlar = {
+            secili: "modern",
+            logo_durumu: true
+        };
     }
 }
 
