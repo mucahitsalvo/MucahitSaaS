@@ -2103,7 +2103,6 @@ function deleteNote(date, idx) {
     saveData();
 }
 
-// --- SUPABASE DATABASE SYNC HELPERS ---
 async function syncFromSupabase() {
     if (!supabase || !supabase.auth.getUser) return;
     try {
@@ -2281,7 +2280,6 @@ async function dbDeleteItem(type, item) {
     }
 }
 
-// --- CURRENCY CONVERTER & TICKER ---
 let exchangeRates = { USD: 32.5000, EUR: 35.2000, GBP: 41.1000 };
 let prevExchangeRates = { USD: 32.5000, EUR: 35.2000, GBP: 41.1000 };
 let liveCurrencyInterval = null;
@@ -2428,7 +2426,6 @@ function getMonthlyFinanceData() {
     return { monthlyGelir, monthlyGider };
 }
 
-// --- KASA & BANKA MODULE RENDERING ---
 function renderKasalar(container) {
     let totalTRY = 0;
     mockData.kasalar.forEach(k => {
@@ -2595,7 +2592,6 @@ function formatMoneyWithCurrency(amount, currency) {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount);
 }
 
-// --- ÇEK & SENET TAKİBİ MODULE ---
 function renderCekSenetler(container) {
     let toplamAlinan = 0;
     let toplamVerilen = 0;
@@ -2751,7 +2747,6 @@ function tahsilEtCek(index) {
 
 
 
-// --- TEKLİF & SİPARİŞ MODULE ---
 function renderTeklifler(container) {
     container.innerHTML = `
         <div class="page-header fade-in">
@@ -2865,7 +2860,6 @@ function faturayaDonusturTeklif(index) {
     saveData();
 }
 
-// --- PERSONEL YÖNETİMİ MODULE ---
 function renderPersonel(container) {
     let toplamPersonel = mockData.personeller.length;
     let aylikMaasYuku = mockData.personeller.reduce((acc, p) => acc + (parseFloat(p.maas) || 0), 0);
@@ -3008,7 +3002,6 @@ function odeMaas(index) {
     saveData();
 }
 
-// --- CARI HESAP DETAYI & EKSTRE ---
 function viewCariDetail(unvan) {
     const cari = mockData.cariler.find(c => c.unvan === unvan);
     if (!cari) return;
@@ -3097,7 +3090,6 @@ function downloadCariStatement(unvan) {
     triggerCSVDownload(csvContent, `${cari.unvan.replace(/ /g, "_")}_Cari_Ekstre.csv`);
 }
 
-// --- CSV EXPORT HELPERS ---
 function downloadCarilerCSV() {
     let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
     csvContent += "Ünvan;Tür;Bakiye (TL)\n";
@@ -3135,7 +3127,6 @@ function triggerCSVDownload(content, filename) {
     document.body.removeChild(link);
 }
 
-// --- BULK IMPORT FUNCTIONS ---
 function downloadCSVTemplate() {
     let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
     csvContent += "ürün kodu;ürün adı;fiyatı;stok miktarı\n";
@@ -3674,7 +3665,6 @@ function executePrint() {
     window.print();
 }
 
-// --- INVOICE DYNAMIC ITEM INPUT BUILDERS ---
 function addInvoiceItemRow() {
     const tableBody = document.getElementById('invoiceItemsTableBody');
     if (!tableBody) return;
@@ -3742,7 +3732,6 @@ function recalculateInvoiceModalTotals() {
     if (totEl) totEl.innerText = formatMoney(grandTotal);
 }
 
-/* --- MODAL LOGIC --- */
 let currentModalType = '';
 function openModal(type) {
     currentModalType = type;
@@ -4495,7 +4484,6 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// --- DATABASE & EMAIL API CONFIG ---
 const WEB3FORMS_ACCESS_KEY = ""; // Paste your Web3Forms Access Key here to enable real password reset emails!
 
 const customSupabaseUrl = localStorage.getItem('saas_supabase_url');
@@ -4716,8 +4704,6 @@ function showSimToast(message) {
     }, 10000);
 }
 
-// --- SANAL POS GATEWAY SIMULATOR ---
-// --- SANAL POS GATEWAY SIMULATOR ---
 let activePosInvoiceIndex = null;
 let activePosPurchaseModule = null;
 
@@ -5670,8 +5656,6 @@ function uninstallApplication(name, isModule = false) {
         renderUygulamalar(document.getElementById('contentArea'));
     }
 }
-
-// --- FREE APPLICATIONS MOCK INTEGRATIONS ---
 
 function renderApplicationBlocker(container, name, marketName) {
     container.innerHTML = `
